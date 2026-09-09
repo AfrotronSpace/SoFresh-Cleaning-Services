@@ -1,0 +1,467 @@
+// So Fresh Cleaning Service — data model
+// Postgres + Prisma. No payment data is ever stored: money is handled
+// off-site (bank transfer / payment link), so there is no card or token model here.
+
+generator client {
+  provider = "prisma-client-js"
+
+  // "native" keeps local dev working on whatever platform you're on. The
+  // explicit target matches the Debian-based runtime image in the Dockerfile
+  // (bookworm-slim, OpenSSL 3.0) so the client works even if the generated
+  // artifact is ever produced outside that container. Both engines are small;
+  // this is not worth removing to save space.
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+
+  // Runtime connection. The app runs as ONE persistent container on Railway
+  // (unlike Vercel's per-request functions), so a single direct connection is
+  // fine with Railway's own Postgres plugin — Prisma keeps its own small pool
+  // inside that one process. If you point this at an external pooled Postgres
+  // (Neon, Supabase) instead, use its pooled endpoint and append
+  // ?pgbouncer=true&connection_limit=1 for a transaction-mode pooler.
+  url = env("DATABASE_URL")
+
+  // Migrations and introspection need a direct, unpooled connection. With
+  // Railway's own Postgres this is identical to DATABASE_URL. With an
+  // external pooled provider, use that provider's direct (non-pooler) URL.
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------------------------------------------------------------- enums
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+/// Broad "what is being cleaned" — drives filtering and the booking wizard.
+enum PropertyKind {
+  APARTMENT
+  HOUSE
+  OFFICE
+  COMMERCIAL_UNIT
+  GARAGE
+  VEHICLE
+  OUTDOOR
+  OTHER
+}
+
+/// The three groups the business asked for on the website.
+enum ServiceGroup {
+  SIGNATURE // Signature Restoration & One-Off Cleaning
+  TRANSITION // Moving & Property Transition
+  COMMERCIAL // Commercial & Regular Cleaning
+}
+
+/// How the headline price should be read by a customer.
+enum PriceMode {
+  FROM // "from £350"
+  PER_HOUR // "£25 per hour"
+  FIXED // "£120"
+  QUOTE_ONLY // "priced after we see photos"
+}
+
+enum Occupancy {
+  OCCUPIED
+  EMPTY
+  PARTIALLY_FURNISHED
+}
+
+enum PropertyCondition {
+  LIGHT // tidy, just wants a proper deep clean
+  MODERATE // lived-in, some build-up
+  HEAVY // heavily soiled, needs restoration
+  BUILD_DUST // after builders / renovation
+  UNKNOWN
+}
+
+enum AccessMethod {
+  CUSTOMER_HOME
+  SOMEONE_WILL_MEET
+  KEY_LEFT
+  KEY_SAFE
+  AGENT_OR_LANDLORD
+  TO_BE_ARRANGED
+}
+
+enum Urgency {
+  STANDARD
+  SHORT_NOTICE // inside the preferred 48–72h notice
+  EMERGENCY // same day
+}
+
+enum BookingStatus {
+  IN_REVIEW // customer-facing wording: "booked session in review"
+  INFO_NEEDED
+  QUOTED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  DECLINED
+}
+
+enum ContactPreference {
+  WHATSAPP
+  PHONE
+  EMAIL
+}
+
+enum BookingSource {
+  WEBSITE
+  WHATSAPP
+  PHONE
+  EMAIL
+  ADMIN
+}
+
+enum MessageChannel {
+  EMAIL
+  WHATSAPP
+  INTERNAL_NOTE
+}
+
+enum MessageStatus {
+  QUEUED
+  SENT
+  FAILED
+  SKIPPED
+}
+
+enum EnquiryStatus {
+  NEW
+  IN_PROGRESS
+  CLOSED
+}
+
+// ---------------------------------------------------------------- people
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  phone        String?
+  passwordHash String
+  role         Role     @default(CUSTOMER)
+
+  // Prefilled into the booking wizard next time round.
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  postcode     String?
+
+  marketingOptIn Boolean   @default(false)
+  lastLoginAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  bookings     Booking[]
+  messages     MessageLog[] @relation("MessageRecipient")
+  sentMessages MessageLog[] @relation("MessageSender")
+
+  @@index([role])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------- catalogue
+
+model Service {
+  id   String @id @default(cuid())
+  slug String @unique
+  name String
+
+  /// One line for the catalogue grid.
+  summary String
+  /// Full page copy. Plain paragraphs separated by blank lines.
+  body    String
+
+  group        ServiceGroup
+  propertyKind PropertyKind @default(HOUSE)
+
+  // --- pricing -------------------------------------------------
+  priceMode      PriceMode @default(QUOTE_ONLY)
+  /// Headline figure in pounds. Null when priceMode is QUOTE_ONLY.
+  price          Decimal?  @db.Decimal(10, 2)
+  /// Shown as a badge on the service card and detail page.
+  negotiable     Boolean   @default(false)
+  /// e.g. "minimum 3 hours" — free text so it can hold any rule.
+  minimumCharge  String?
+  currency       String    @default("GBP")
+
+  // --- scope ---------------------------------------------------
+  includes String[] @default([])
+  excludes String[] @default([])
+  /// [{ "name": "Inside the oven", "note": "quoted on scope" }]
+  extras   Json?
+
+  durationEstimate String? // "half a day to a full day"
+  noticeHours      Int     @default(48)
+  requiresSurvey   Boolean @default(false) // true => "book a free assessment", not "get a price"
+  photosRecommended Boolean @default(true)
+
+  // --- presentation --------------------------------------------
+  heroImage String?
+  gallery   String[] @default([])
+  /// Short, service-specific FAQs: [{ "q": "...", "a": "..." }]
+  faqs      Json?
+  /// Prefills the WhatsApp deep link on this page.
+  whatsappPrompt String?
+
+  featured  Boolean @default(false)
+  active    Boolean @default(true)
+  sortOrder Int     @default(100)
+
+  seoTitle       String?
+  seoDescription String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookingItems BookingItem[]
+
+  @@index([active, sortOrder])
+  @@index([group])
+}
+
+// ---------------------------------------------------------------- bookings
+
+model Booking {
+  id        String @id @default(cuid())
+  /// Human-quotable, e.g. SF-7K2QD4
+  reference String @unique
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Captured on every booking, signed in or not.
+  contactName       String
+  contactEmail      String
+  contactPhone      String
+  contactPreference ContactPreference @default(WHATSAPP)
+
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  postcode     String
+
+  propertyKind PropertyKind      @default(HOUSE)
+  bedrooms     Int?
+  bathrooms    Int?
+  occupancy    Occupancy         @default(OCCUPIED)
+  condition    PropertyCondition @default(UNKNOWN)
+
+  preferredDate    DateTime
+  alternativeDate  DateTime?
+  timePreference   String? // "morning", "afternoon", "flexible"
+  datesFlexible    Boolean  @default(false)
+  urgency          Urgency  @default(STANDARD)
+
+  accessMethod AccessMethod @default(CUSTOMER_HOME)
+  parkingNotes String?
+  petsOnSite   Boolean      @default(false)
+  allergyNotes String?
+  notes        String?
+
+  /// True when the customer skipped the catalogue and described the job themselves.
+  isCustom    Boolean @default(false)
+  customBrief String?
+
+  status      BookingStatus @default(IN_REVIEW)
+  source      BookingSource @default(WEBSITE)
+  quotedTotal Decimal?      @db.Decimal(10, 2)
+  quoteNotes  String?
+  adminNotes  String?
+
+  marketingOptIn Boolean @default(false)
+
+  // Delivery bookkeeping so the admin can see what actually went out.
+  customerEmailSentAt DateTime?
+  adminEmailSentAt    DateTime?
+  whatsappForwardedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items       BookingItem[]
+  attachments Attachment[]
+  events      BookingEvent[]
+  messages    MessageLog[]
+
+  @@index([status, createdAt])
+  @@index([userId])
+  @@index([contactEmail])
+  @@index([preferredDate])
+}
+
+model BookingItem {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  serviceId String?
+  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+
+  /// Frozen at submit time so history survives catalogue edits.
+  nameSnapshot  String
+  priceSnapshot Decimal? @db.Decimal(10, 2)
+  priceMode     PriceMode @default(QUOTE_ONLY)
+
+  quantity Int      @default(1)
+  /// Extras the customer ticked for this service.
+  extras   String[] @default([])
+  notes    String?
+
+  @@index([bookingId])
+  @@index([serviceId])
+}
+
+/// Optional photos/video the customer uploads to help us quote.
+model Attachment {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  url      String
+  filename String
+  mimeType String
+  size     Int
+  createdAt DateTime @default(now())
+
+  @@index([bookingId])
+}
+
+/// Append-only trail for the admin: status changes, notes, sends.
+model BookingEvent {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  label     String
+  detail    String?
+  actor     String? // admin email, or "system"
+  createdAt DateTime @default(now())
+
+  @@index([bookingId, createdAt])
+}
+
+// ---------------------------------------------------------------- comms
+
+model Enquiry {
+  id       String        @id @default(cuid())
+  name     String
+  email    String
+  phone    String?
+  postcode String?
+  subject  String
+  message  String
+  status   EnquiryStatus @default(NEW)
+  source   String        @default("contact-page")
+  createdAt DateTime     @default(now())
+
+  @@index([status, createdAt])
+}
+
+model MessageLog {
+  id      String         @id @default(cuid())
+  channel MessageChannel @default(EMAIL)
+  status  MessageStatus  @default(QUEUED)
+
+  toName    String?
+  toAddress String // email address or phone number
+  subject   String?
+  body      String
+
+  recipientId String?
+  recipient   User?   @relation("MessageRecipient", fields: [recipientId], references: [id], onDelete: SetNull)
+
+  senderId String?
+  sender   User?   @relation("MessageSender", fields: [senderId], references: [id], onDelete: SetNull)
+
+  bookingId String?
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  error     String?
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([recipientId])
+  @@index([bookingId])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------- site config
+
+/// Single row, id = "singleton". Everything the admin can change without a deploy.
+model SiteSetting {
+  id String @id @default("singleton")
+
+  businessName String @default("So Fresh Cleaning Service")
+  legalName    String @default("So Fresh Cleaning Service Ltd")
+  companyNumber String @default("16423190")
+  tagline      String @default("Premium, detail-led cleaning across Essex and Suffolk")
+
+  phone     String @default("07386 528399")
+  whatsapp  String @default("447399505686")
+  email     String @default("info@sofreshcleaning.co.uk")
+
+  /// Public-facing only. The registered office is deliberately not published.
+  serviceAreas String[] @default([])
+  openingHours String   @default("Monday to Sunday, by appointment")
+
+  responsePromise String @default("We reply the same day, usually much sooner during working hours.")
+  quoteWindow     String @default("Your fixed price arrives within 24 hours of us having everything we need.")
+  bookingFeeNote  String @default("A booking fee secures your date and comes off the final balance. We confirm the exact amount before you commit.")
+  cancellationHours Int  @default(72)
+  reclaimWindowHours Int @default(15)
+
+  // Notification switches — these are the toggles the business asked for.
+  emailBookingToAdmin    Boolean @default(true)
+  emailBookingToCustomer Boolean @default(true)
+  forwardBookingsToWhatsapp Boolean @default(false)
+  whatsappForwardNumber  String?
+  adminNotifyEmail       String  @default("info@sofreshcleaning.co.uk")
+  adminNotifyCc          String?
+
+  announcementText   String?
+  announcementActive Boolean @default(false)
+
+  /// [{ "image": "...", "headline": "...", "sub": "..." }]
+  heroSlides Json?
+
+  googleReviewUrl String?
+  facebookUrl     String?
+  instagramUrl    String?
+  tiktokUrl       String?
+
+  updatedAt DateTime @updatedAt
+}
+
+model Testimonial {
+  id         String  @id @default(cuid())
+  authorName String // stored as "Nicola R." — first name + initial by default
+  area       String?
+  rating     Int     @default(5)
+  body       String
+  source     String  @default("Google")
+  featured   Boolean @default(false)
+  active     Boolean @default(true)
+  sortOrder  Int     @default(100)
+  createdAt  DateTime @default(now())
+
+  @@index([active, sortOrder])
+}
+
+model AreaCovered {
+  id       String  @id @default(cuid())
+  slug     String  @unique
+  name     String
+  county   String  @default("Essex")
+  blurb    String?
+  priority Boolean @default(false) // growth areas get their own landing page
+  active   Boolean @default(true)
+  sortOrder Int    @default(100)
+
+  @@index([active, sortOrder])
+}

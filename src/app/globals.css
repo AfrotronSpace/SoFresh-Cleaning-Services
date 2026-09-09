@@ -1,0 +1,249 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ============================================================
+   So Fresh — design tokens
+
+   Base is white, not cream: white is one of the two stated brand
+   colours. Green does the structural work, champagne is used only
+   where we want the eye to stop (price, seam, one CTA per screen).
+   ============================================================ */
+
+:root {
+  /* raw palette */
+  --paper: #ffffff;
+  --mist: #eff3f0;
+  --haze: #f6f8f6;
+  --ink: #10201a;
+  --forest: #0d3b2a;
+  --forest-deep: #07271b;
+  --verdant: #1f7a55;
+  --sage: #5a6b63;
+  --champagne: #c6a86b;
+  --champagne-soft: #eadfc7;
+  --line: #e2e7e3;
+
+  /* semantic tokens (shadcn contract) */
+  --radius: 0.75rem;
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--paper);
+  --card-foreground: var(--ink);
+  --popover: var(--paper);
+  --popover-foreground: var(--ink);
+  --primary: var(--forest);
+  --primary-foreground: #ffffff;
+  --secondary: var(--mist);
+  --secondary-foreground: var(--forest);
+  --muted: var(--haze);
+  --muted-foreground: var(--sage);
+  --accent: var(--champagne);
+  --accent-foreground: #241a06;
+  --destructive: #b3261e;
+  --destructive-foreground: #ffffff;
+  --success: #1f7a55;
+  --border: var(--line);
+  --input: #dce3de;
+  --ring: var(--verdant);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-paper: var(--paper);
+  --color-mist: var(--mist);
+  --color-haze: var(--haze);
+  --color-ink: var(--ink);
+  --color-forest: var(--forest);
+  --color-forest-deep: var(--forest-deep);
+  --color-verdant: var(--verdant);
+  --color-sage: var(--sage);
+  --color-champagne: var(--champagne);
+  --color-champagne-soft: var(--champagne-soft);
+
+  --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+
+  /* Radii are deliberately not uniform: large on feature surfaces,
+     small on controls, so hierarchy reads without extra chrome. */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+
+  --shadow-lift: 0 1px 2px rgb(13 59 42 / 0.04), 0 12px 32px -12px rgb(13 59 42 / 0.16);
+  --shadow-panel: 0 24px 64px -32px rgb(7 39 27 / 0.4);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv05" 1, "ss01" 1;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Display face. Fraunces is variable — we pull the optical size up and
+     soften the terminals so large headings read warm rather than clinical. */
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    font-variation-settings: "SOFT" 40, "WONK" 0, "opsz" 72;
+    letter-spacing: -0.021em;
+    text-wrap: balance;
+  }
+
+  h1 { font-weight: 500; }
+  h2, h3 { font-weight: 500; }
+
+  p, li { text-wrap: pretty; }
+
+  ::selection {
+    background-color: var(--champagne-soft);
+    color: var(--forest-deep);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--verdant);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  input, textarea, select, button { font-family: inherit; }
+
+  /* iOS zooms the viewport on any input under 16px. */
+  @media (max-width: 640px) {
+    input, textarea, select { font-size: 16px; }
+  }
+}
+
+@layer components {
+  /* Page gutter. One definition, so section padding can never fight itself. */
+  .shell {
+    width: 100%;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+    max-width: 78rem;
+  }
+  @media (min-width: 768px) {
+    .shell { padding-inline: 2rem; }
+  }
+
+  /* The recurring motif: a hairline "seam" like the join between a
+     before and an after. Used instead of horizontal dividers. */
+  .seam {
+    position: relative;
+  }
+  .seam::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: 1px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      var(--champagne) 18%,
+      var(--champagne) 82%,
+      transparent
+    );
+    opacity: 0.55;
+  }
+
+  .rule-champagne {
+    height: 1px;
+    background: linear-gradient(to right, var(--champagne), transparent);
+  }
+
+  .prose-sofresh {
+    max-width: 68ch;
+    line-height: 1.75;
+    color: var(--sage);
+  }
+  .prose-sofresh > * + * { margin-top: 1.15em; }
+  .prose-sofresh strong { color: var(--ink); font-weight: 600; }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+
+  /* Full-bleed inside a .shell parent */
+  .bleed {
+    margin-inline: calc(50% - 50vw);
+    width: 100vw;
+  }
+
+  .grain {
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      rgb(13 59 42 / 0.055) 1px,
+      transparent 0
+    );
+    background-size: 14px 14px;
+  }
+
+  .scrollbar-none { scrollbar-width: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+}
+
+/* Nobody should get motion sickness from a cleaning website. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Radix accordion needs real keyframes to animate to auto height. */
+@theme inline {
+  --animate-accordion-down: accordion-down 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-accordion-up: accordion-up 250ms cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-marquee: marquee 44s linear infinite;
+}
+
+@keyframes accordion-down {
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-accordion-content-height); opacity: 1; }
+}
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}

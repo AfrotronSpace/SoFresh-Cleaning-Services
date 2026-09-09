@@ -1,0 +1,11 @@
+# Served dynamically by /app/robots.ts — this file is a static fallback only.
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /booking-received/
+
+Sitemap: https://sofreshcleaning.co.uk/sitemap.xml

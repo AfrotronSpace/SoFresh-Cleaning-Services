@@ -7,7 +7,7 @@
  *   npm run db:seed
  */
 import { PrismaClient, type Prisma } from "@prisma/client";
-import { hashPassword } from "../src/lib/auth";
+import { hashPassword } from "../src/lib/password";
 
 const prisma = new PrismaClient();
 

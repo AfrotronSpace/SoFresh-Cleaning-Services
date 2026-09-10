@@ -2,9 +2,11 @@ import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify } from "jose";
-import bcrypt from "bcryptjs";
 import type { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { hashPassword, verifyPassword } from "@/lib/password";
+
+export { hashPassword, verifyPassword };
 
 const COOKIE = "sofresh_session";
 const MAX_AGE = 60 * 60 * 24 * 30; // 30 days
@@ -20,14 +22,6 @@ function secret() {
   const value = process.env.AUTH_SECRET;
   if (!value) throw new Error("AUTH_SECRET is not set. Copy .env.example to .env and fill it in.");
   return new TextEncoder().encode(value);
-}
-
-export async function hashPassword(plain: string) {
-  return bcrypt.hash(plain, 12);
-}
-
-export async function verifyPassword(plain: string, hash: string) {
-  return bcrypt.compare(plain, hash);
 }
 
 export async function createSession(user: SessionUser) {

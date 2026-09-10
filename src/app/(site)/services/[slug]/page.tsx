@@ -21,7 +21,9 @@ export const dynamic = "force-dynamic";
 type Params = { params: Promise<{ slug: string }> };
 
 async function getService(slug: string) {
-  return prisma.service.findFirst({ where: { slug, active: true } }).catch(() => null);
+  return prisma.service
+    .findFirst({ where: { slug, active: true }, include: { images: { orderBy: { sortOrder: "asc" } } } })
+    .catch(() => null);
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
@@ -144,6 +146,16 @@ export default async function ServiceDetailPage({ params }: Params) {
               <a href="#book">{service.requiresSurvey ? "Book a free assessment" : "Start a booking"}</a>
             </Button>
           </div>
+
+          {service.tags.length > 0 && (
+            <ul className="mt-8 flex flex-wrap gap-2">
+              {service.tags.map((tag) => (
+                <li key={tag} className="rounded-full border border-white/20 px-3 py-1 text-xs text-white/70">
+                  {tag}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </header>
 
@@ -188,6 +200,30 @@ export default async function ServiceDetailPage({ params }: Params) {
                 </section>
               )}
             </div>
+          )}
+
+          {service.images.length > 0 && (
+            <section className="mt-14" aria-labelledby="service-gallery">
+              <h2 id="service-gallery" className="font-display text-xl">From recent jobs</h2>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                {service.images.map((image) => (
+                  <figure key={image.id} className="overflow-hidden rounded-2xl border border-border bg-mist">
+                    <div className="relative aspect-[4/3]">
+                      <Image
+                        src={image.url}
+                        alt={image.alt || service.name}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className="object-cover"
+                      />
+                    </div>
+                    {image.caption && (
+                      <figcaption className="px-4 py-3 text-sm text-sage">{image.caption}</figcaption>
+                    )}
+                  </figure>
+                ))}
+              </div>
+            </section>
           )}
 
           {faqs.length > 0 && (

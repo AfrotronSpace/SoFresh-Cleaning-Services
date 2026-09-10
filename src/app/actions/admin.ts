@@ -27,6 +27,16 @@ const lines = (value: FormDataEntryValue | null) =>
     .map((line) => line.trim())
     .filter(Boolean);
 
+/** The form serialises repeatable groups (extras, FAQs, gallery images) as a hidden JSON input. */
+function json(value: FormDataEntryValue | null): unknown[] {
+  try {
+    const parsed = JSON.parse(String(value ?? "[]"));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 // ---------------------------------------------------------------- services
 
 export async function saveServiceAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -49,11 +59,16 @@ export async function saveServiceAction(_prev: ActionState, formData: FormData):
     minimumCharge: String(formData.get("minimumCharge") ?? ""),
     includes: lines(formData.get("includes")),
     excludes: lines(formData.get("excludes")),
+    extras: json(formData.get("extrasJson")),
     durationEstimate: String(formData.get("durationEstimate") ?? ""),
     noticeHours: Number(formData.get("noticeHours") ?? 48),
     requiresSurvey: formData.get("requiresSurvey") === "on",
     photosRecommended: formData.get("photosRecommended") === "on",
+    icon: String(formData.get("icon") ?? ""),
+    tags: json(formData.get("tagsJson")),
     heroImage: String(formData.get("heroImage") ?? ""),
+    images: json(formData.get("imagesJson")),
+    faqs: json(formData.get("faqsJson")),
     whatsappPrompt: String(formData.get("whatsappPrompt") ?? ""),
     featured: formData.get("featured") === "on",
     active: formData.get("active") === "on",
@@ -64,8 +79,13 @@ export async function saveServiceAction(_prev: ActionState, formData: FormData):
 
   if (!parsed.success) return { error: "Please check the highlighted fields.", fieldErrors: collect(parsed.error.issues) };
 
-  const extras = lines(formData.get("extras")).map((line) => ({ name: line }));
   const d = parsed.data;
+  const images = d.images.map((image, index) => ({
+    url: image.url,
+    alt: image.alt || d.name,
+    caption: image.caption || null,
+    sortOrder: index * 10,
+  }));
 
   const data = {
     name: d.name,
@@ -80,11 +100,13 @@ export async function saveServiceAction(_prev: ActionState, formData: FormData):
     minimumCharge: d.minimumCharge || null,
     includes: d.includes,
     excludes: d.excludes,
-    extras,
+    extras: d.extras.map((extra) => ({ name: extra.name, note: extra.note || undefined })),
     durationEstimate: d.durationEstimate || null,
     noticeHours: d.noticeHours,
     requiresSurvey: d.requiresSurvey,
     photosRecommended: d.photosRecommended,
+    icon: d.icon || null,
+    tags: d.tags,
     heroImage: d.heroImage || null,
     whatsappPrompt: d.whatsappPrompt || null,
     featured: d.featured,
@@ -92,11 +114,18 @@ export async function saveServiceAction(_prev: ActionState, formData: FormData):
     sortOrder: d.sortOrder,
     seoTitle: d.seoTitle || null,
     seoDescription: d.seoDescription || null,
+    faqs: d.faqs.length > 0 ? d.faqs : Prisma.JsonNull,
   };
 
   try {
-    if (id) await prisma.service.update({ where: { id }, data });
-    else await prisma.service.create({ data });
+    if (id) {
+      await prisma.service.update({
+        where: { id },
+        data: { ...data, images: { deleteMany: {}, create: images } },
+      });
+    } else {
+      await prisma.service.create({ data: { ...data, images: { create: images } } });
+    }
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return { error: "That web address is already used by another service.", fieldErrors: { slug: "Pick a different address" } };

@@ -25,11 +25,13 @@ migrated in this working tree.
 ### Admin dashboard — 7 sections
 Overview (counts, pipeline value, config warnings), Bookings (list + detail
 with status/quote editor, event trail, WhatsApp forward), Services (full CRUD
-over every catalogue field), Customers, Enquiries, Messages (every email and
-WhatsApp attempt, including skipped ones), Settings.
+over every catalogue field, including a header-image and gallery uploader
+that presigns straight to R2's public bucket — see `docs/DEPLOYMENT.md` —
+plus per-service FAQs, keyword tags and an icon), Customers, Enquiries,
+Messages (every email and WhatsApp attempt, including skipped ones), Settings.
 
 ### Platform
-- 11 Prisma models, no payment or card model anywhere by design
+- 12 Prisma models, no payment or card model anywhere by design
 - Zod validation shared by API routes and server actions
 - Email via nodemailer, degrading to a logged `SKIPPED` with no SMTP
 - WhatsApp in two modes: zero-setup `wa.me` deep links, or Meta Cloud API

@@ -65,6 +65,28 @@ export function isR2Configured() {
   return env() !== null;
 }
 
+/**
+ * A SECOND, separate bucket for genuinely public assets — service catalogue
+ * photos, not customer uploads. Kept apart from `env()` above on purpose:
+ * that bucket stays private forever (customers' homes), this one is meant to
+ * have its Public Development URL or a custom domain switched on. Same
+ * account and credentials work for both as long as the R2 API token is
+ * scoped to include this bucket too — see docs/DEPLOYMENT.md.
+ */
+function publicEnv() {
+  const accountId = process.env.R2_ACCOUNT_ID;
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+  const bucket = process.env.R2_PUBLIC_BUCKET;
+  const publicHost = process.env.NEXT_PUBLIC_R2_PUBLIC_HOST;
+  if (!accountId || !accessKeyId || !secretAccessKey || !bucket || !publicHost) return null;
+  return { accountId, accessKeyId, secretAccessKey, bucket, publicHost };
+}
+
+export function isR2PublicConfigured() {
+  return publicEnv() !== null;
+}
+
 let cached: S3Client | null = null;
 
 function client(config: NonNullable<ReturnType<typeof env>>) {
@@ -157,6 +179,84 @@ export async function presignUpload(opts: {
   );
 
   return { ok: true, target: { url, key, expiresIn: UPLOAD_URL_TTL } };
+}
+
+export const ALLOWED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+export type AllowedImageMimeType = (typeof ALLOWED_IMAGE_MIME_TYPES)[number];
+
+/** 15 MB. Catalogue photos, not phone-video walkthroughs — no need for the 100 MB cap above. */
+export const MAX_IMAGE_UPLOAD_BYTES = 15 * 1024 * 1024;
+
+export type PublicUploadTarget = {
+  /** PUT the file here, with a Content-Type header that matches exactly. */
+  url: string;
+  /** Store this on ServiceImage / Service.heroImage. */
+  key: string;
+  /** The URL to actually render — `https://${NEXT_PUBLIC_R2_PUBLIC_HOST}/${key}`. */
+  publicUrl: string;
+  expiresIn: number;
+};
+
+/**
+ * Presigns a browser upload of a service photo into the PUBLIC bucket.
+ * Same signing quirks as `presignUpload` above (see the comment there) —
+ * this reuses the same S3Client and the same two load-bearing SDK options.
+ */
+export async function presignPublicImageUpload(opts: {
+  /** Namespaces the object, e.g. a service slug. */
+  folder: string;
+  filename: string;
+  contentType: string;
+  size: number;
+}): Promise<{ ok: true; target: PublicUploadTarget } | { ok: false; reason: string }> {
+  const config = publicEnv();
+  if (!config) return { ok: false, reason: "Photo storage isn't configured yet" };
+
+  if (!ALLOWED_IMAGE_MIME_TYPES.includes(opts.contentType as AllowedImageMimeType)) {
+    return { ok: false, reason: "Use a JPEG, PNG or WebP image" };
+  }
+  if (!Number.isFinite(opts.size) || opts.size <= 0) {
+    return { ok: false, reason: "That file looks empty" };
+  }
+  if (opts.size > MAX_IMAGE_UPLOAD_BYTES) {
+    return { ok: false, reason: "That image is larger than 15 MB" };
+  }
+
+  const folder = opts.folder.replace(/[^a-z0-9-]/gi, "") || "general";
+  const key = `services/${folder}/${crypto.randomUUID()}-${safeFilename(opts.filename)}`;
+
+  const url = await getSignedUrl(
+    client(config),
+    new PutObjectCommand({
+      Bucket: config.bucket,
+      Key: key,
+      ContentType: opts.contentType,
+      ContentLength: opts.size,
+    }),
+    {
+      expiresIn: UPLOAD_URL_TTL,
+      signableHeaders: new Set(["content-type", "content-length"]),
+    },
+  );
+
+  return {
+    ok: true,
+    target: { url, key, publicUrl: `https://${config.publicHost}/${key}`, expiresIn: UPLOAD_URL_TTL },
+  };
+}
+
+/** Used when a photo is removed from a service's gallery. Never throws. */
+export async function deletePublicObject(key: string) {
+  const config = publicEnv();
+  if (!config) return { ok: false as const, reason: "Photo storage isn't configured" };
+  try {
+    await client(config).send(new DeleteObjectCommand({ Bucket: config.bucket, Key: key }));
+    return { ok: true as const };
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "Unknown R2 error";
+    console.error("[r2 public delete failed]", reason);
+    return { ok: false as const, reason };
+  }
 }
 
 /** Short-lived read URL, for showing an attachment in the admin dashboard. */

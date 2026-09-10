@@ -109,6 +109,22 @@ export const bookingSchema = z
     path: ["items"],
   });
 
+export const serviceExtraSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  note: z.string().trim().max(200).optional().or(z.literal("")),
+});
+
+export const serviceFaqSchema = z.object({
+  q: z.string().trim().min(3, "Needs a question").max(200),
+  a: z.string().trim().min(3, "Needs an answer").max(2000),
+});
+
+export const serviceImageSchema = z.object({
+  url: z.string().trim().min(1).max(500),
+  alt: z.string().trim().max(160).optional().or(z.literal("")),
+  caption: z.string().trim().max(240).optional().or(z.literal("")),
+});
+
 export const serviceSchema = z.object({
   name: z.string().trim().min(2).max(120),
   slug: z.string().trim().min(2).max(120).regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers and hyphens only"),
@@ -131,11 +147,16 @@ export const serviceSchema = z.object({
   minimumCharge: z.string().max(160).optional().or(z.literal("")),
   includes: z.array(z.string().max(300)).default([]),
   excludes: z.array(z.string().max(300)).default([]),
+  extras: z.array(serviceExtraSchema).max(20).default([]),
   durationEstimate: z.string().max(160).optional().or(z.literal("")),
   noticeHours: z.number().int().min(0).max(2160).default(48),
   requiresSurvey: z.boolean().default(false),
   photosRecommended: z.boolean().default(true),
+  icon: z.string().trim().max(40).optional().or(z.literal("")),
+  tags: z.array(z.string().trim().min(1).max(40)).max(12).default([]),
   heroImage: z.string().max(500).optional().or(z.literal("")),
+  images: z.array(serviceImageSchema).max(24).default([]),
+  faqs: z.array(serviceFaqSchema).max(12).default([]),
   whatsappPrompt: z.string().max(300).optional().or(z.literal("")),
   featured: z.boolean().default(false),
   active: z.boolean().default(true),

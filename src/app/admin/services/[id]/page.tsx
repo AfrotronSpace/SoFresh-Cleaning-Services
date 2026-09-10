@@ -14,10 +14,14 @@ export const metadata: Metadata = { title: "Edit service", robots: { index: fals
 export default async function EditServicePage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();
   const { id } = await params;
-  const service = await prisma.service.findUnique({ where: { id } });
+  const service = await prisma.service.findUnique({
+    where: { id },
+    include: { images: { orderBy: { sortOrder: "asc" } } },
+  });
   if (!service) notFound();
 
-  const extras = Array.isArray(service.extras) ? (service.extras as { name: string }[]) : [];
+  const extras = Array.isArray(service.extras) ? (service.extras as { name: string; note?: string }[]) : [];
+  const faqs = Array.isArray(service.faqs) ? (service.faqs as { q: string; a: string }[]) : [];
 
   return (
     <>
@@ -52,12 +56,16 @@ export default async function EditServicePage({ params }: { params: Promise<{ id
             minimumCharge: service.minimumCharge ?? "",
             includes: service.includes.join("\n"),
             excludes: service.excludes.join("\n"),
-            extras: extras.map((e) => e.name).join("\n"),
+            extras: extras.map((e) => ({ name: e.name, note: e.note ?? "" })),
             durationEstimate: service.durationEstimate ?? "",
             noticeHours: service.noticeHours,
             requiresSurvey: service.requiresSurvey,
             photosRecommended: service.photosRecommended,
+            icon: service.icon ?? "",
+            tags: service.tags,
             heroImage: service.heroImage ?? "",
+            images: service.images.map((img) => ({ url: img.url, alt: img.alt, caption: img.caption ?? "" })),
+            faqs,
             whatsappPrompt: service.whatsappPrompt ?? "",
             featured: service.featured,
             active: service.active,

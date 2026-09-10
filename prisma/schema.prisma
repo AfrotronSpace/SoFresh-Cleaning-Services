@@ -202,8 +202,11 @@ model Service {
   photosRecommended Boolean @default(true)
 
   // --- presentation --------------------------------------------
+  /// Lucide icon key shown next to the name in the admin list and catalogue.
+  icon      String?
+  /// Freeform keyword chips — customer search vocabulary, shown on the detail page.
+  tags      String[] @default([])
   heroImage String?
-  gallery   String[] @default([])
   /// Short, service-specific FAQs: [{ "q": "...", "a": "..." }]
   faqs      Json?
   /// Prefills the WhatsApp deep link on this page.
@@ -220,9 +223,28 @@ model Service {
   updatedAt DateTime @updatedAt
 
   bookingItems BookingItem[]
+  images       ServiceImage[]
 
   @@index([active, sortOrder])
   @@index([group])
+}
+
+/// Gallery photos for a service — before/afters, completed-job shots. Ordered
+/// by sortOrder in the admin and on the public detail page.
+model ServiceImage {
+  id        String  @id @default(cuid())
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  url     String
+  /// Required for accessibility; falls back to the service name if left blank.
+  alt     String  @default("")
+  caption String?
+
+  sortOrder Int      @default(100)
+  createdAt DateTime @default(now())
+
+  @@index([serviceId, sortOrder])
 }
 
 // ---------------------------------------------------------------- bookings

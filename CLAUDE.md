@@ -115,7 +115,7 @@ If you add an autoplaying animation, you are breaking this rule.
 ## Where things live
 
 ```
-prisma/schema.prisma        11 models. Deliberately no payment or card model.
+prisma/schema.prisma        12 models. Deliberately no payment or card model.
 prisma/seed.ts              Real service catalogue, areas, settings, placeholder reviews.
 src/lib/constants.ts        SITE object + all enum→label maps. Start here.
 src/lib/validations.ts      Every Zod schema.

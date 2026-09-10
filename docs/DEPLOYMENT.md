@@ -291,6 +291,29 @@ compute for no benefit. Keep the architecture as built.
    are written before the booking row is confirmed, so a customer who closes
    the tab mid-upload leaves an orphan.
 
+### A second, PUBLIC bucket for service photos
+
+Admin → Services → photos (hero image + gallery) uses a separate bucket from
+the private one above — these are marketing images, not customers' homes, and
+are meant to be rendered directly in `<img>`/`next/image` tags at full speed
+rather than through an expiring presigned URL.
+
+1. **Create a second bucket** (e.g. `sofresh-public`) and this time **do**
+   enable its Public Development URL, or attach a custom domain such as
+   `media.sofreshcleaning.co.uk`. Never do this to the `sofresh-uploads`
+   bucket.
+2. **Widen the existing API token's scope** to cover this bucket too (or
+   issue a second Object Read & Write token) — `R2_ACCOUNT_ID` /
+   `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` are shared with the private
+   bucket.
+3. **Add a CORS policy** to this bucket as well (step 3 above, same shape).
+4. Set `R2_PUBLIC_BUCKET` to the bucket name and `NEXT_PUBLIC_R2_PUBLIC_HOST`
+   to whichever host serves it — the public URL is built as
+   `https://${NEXT_PUBLIC_R2_PUBLIC_HOST}/<key>`. With either unset,
+   `isR2PublicConfigured()` is false and the admin form falls back to typing
+   in an image URL by hand instead of uploading — same degrade-gracefully
+   pattern as everything else, so nothing breaks with this unconfigured.
+
 ### What `src/lib/r2.ts` gives you
 
 ```ts
@@ -300,6 +323,12 @@ presignDownload(key, expiresIn?)              // short-lived admin read URL
 deleteObject(key)                             // never throws
 MAX_UPLOAD_BYTES                              // 100 MB
 ALLOWED_MIME_TYPES                            // jpeg/png/webp/heic/heif, mp4/mov/webm
+
+isR2PublicConfigured()                        // the public bucket above
+presignPublicImageUpload({ folder, filename, contentType, size })
+deletePublicObject(key)                       // never throws
+MAX_IMAGE_UPLOAD_BYTES                        // 15 MB
+ALLOWED_IMAGE_MIME_TYPES                      // jpeg/png/webp
 ```
 
 Two AWS SDK options in that file are load-bearing, found by inspecting real
@@ -309,11 +338,19 @@ and `signableHeaders: new Set(["content-type", "content-length"])`.
 
 ### Still to build
 
-The storage layer is configured and tested; nothing calls it yet. Wiring the
-feature up means: an upload step in the booking wizard, a presign API route,
-writing `Attachment` rows, rendering them in the admin booking detail (which
-already fetches `attachments: true` but never renders it), and a short
-privacy-policy paragraph. Tracked as item 6 in `docs/STATUS.md`.
+The PRIVATE bucket (customer booking photos/video) is configured and tested,
+but nothing calls it yet. Wiring the feature up means: an upload step in the
+booking wizard, a presign API route, writing `Attachment` rows, rendering
+them in the admin booking detail (which already fetches `attachments: true`
+but never renders it), and a short privacy-policy paragraph. Tracked as item
+6 in `docs/STATUS.md`.
+
+The PUBLIC bucket (service catalogue photos, above) is wired end to end —
+`/api/admin/uploads` presigns, Admin → Services uploads hero + gallery images
+straight to it, and the service detail page renders the result. It still
+needs the bucket itself creating and its Public Development URL turning on
+before it does anything in production; until then `isR2PublicConfigured()`
+is false and the admin form falls back to a plain URL field.
 
 ---
 

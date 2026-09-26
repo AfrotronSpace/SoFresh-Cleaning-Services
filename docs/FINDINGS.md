@@ -14,7 +14,17 @@ fixing before the client sees it · **S4** cleanup.
 
 ## S1 — launch blockers
 
-### 1. `npm run db:seed` fails outright — the documented setup path is broken **[verified]**
+### 1. ~~`npm run db:seed` fails outright~~ — resolved
+
+Fixed via the first option below: `hashPassword`/`verifyPassword` moved to
+`src/lib/password.ts`, no `server-only` import. `scripts/create-admin.ts` uses
+the same helper. The warning in the last paragraph was prescient — see #22,
+a different script hitting a different wall in production.
+
+<details>
+<summary>Original write-up</summary>
+
+`npm run db:seed` fails outright — the documented setup path is broken **[verified]**
 
 `prisma/seed.ts:10` imports `hashPassword` from `../src/lib/auth`, and
 `src/lib/auth.ts:1` is `import "server-only"`. Next.js aliases `server-only`
@@ -108,6 +118,29 @@ the real text is pasted in and the row is switched on. One-line change in the
 seed's `createMany`, and it makes the failure mode safe by default.
 
 ---
+
+### 22. ~~`create-admin` and `db:seed` couldn't run in the deployed container~~ — resolved 27 Sep 2026 **[verified against a real built image]**
+
+`Dockerfile`'s `runner` stage copied `node_modules`, `prisma/`, `.next` and
+`public` — never `scripts/` or `src/`. `tsx` was present (it's inside
+`node_modules`), but had nothing to run:
+
+```
+$ npm run create-admin -- admin@sofresh.com ...
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/scripts/create-admin.ts'
+```
+
+Caught live: the client couldn't create a production admin account after the
+first deploy. `README.md`'s documented path (`npm run create-admin --`, run
+inside the container via `railway ssh`) was broken for every deployment, not
+just this one — nothing about it depends on this project's specific data.
+
+**Fix:** the runner stage now also copies `scripts/`, `src/lib/password.ts`
+(the one file both scripts import — a relative path, not the `@/*` alias, so
+nothing else in `src/` is needed) and `tsconfig.json`. Verified by building
+the real image and running both `create-admin` and `db:seed` inside it
+against a live Postgres — the created row's password hash round-trips
+through `verifyPassword`, and re-running the seed doesn't duplicate services.
 
 ## S2 — wrong in production
 

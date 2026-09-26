@@ -143,9 +143,11 @@ src/app/api/                Two POST routes (bookings, contact) plus /api/health
 src/app/actions/            Server actions: auth.ts and admin.ts.
 src/components/booking/     The six-step booking wizard (867 lines, the big one).
 Dockerfile                  Three-stage build for Railway. Read the comments
-                            before changing the runner stage — two real,
+                            before changing the runner stage — three real,
                             verified bugs (missing OpenSSL, pnpm's node_modules
-                            layout) are fixed there and easy to reintroduce.
+                            layout, `scripts/`+`src/lib/password.ts` missing so
+                            `create-admin`/`db:seed` couldn't run in prod) are
+                            fixed there and easy to reintroduce.
 railway.json                Build/deploy config: Dockerfile builder, migrate
                             deploy as a pre-deploy step, health check path.
                             Deprecated by Railway in favour of Infrastructure

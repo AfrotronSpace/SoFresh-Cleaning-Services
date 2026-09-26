@@ -91,6 +91,16 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 
+# `npm run create-admin` (and `prisma/seed.ts`) run via `tsx` inside this same
+# container — e.g. `railway ssh` then the command below — not through the
+# Next.js server, so the standalone tracer above never sees them and they need
+# copying explicitly. Both only import `src/lib/password.ts` via a relative
+# path, so that's all of `src/` this image needs; tsconfig.json is included
+# too in case a future script reaches for the `@/*` alias instead.
+COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
+COPY --from=builder --chown=nextjs:nodejs /app/src/lib/password.ts ./src/lib/password.ts
+COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
+
 USER nextjs
 
 # Railway injects PORT and expects the app to listen on it, bound to 0.0.0.0

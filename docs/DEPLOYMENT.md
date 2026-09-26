@@ -375,7 +375,11 @@ is false and the admin form falls back to a plain URL field.
 - [ ] `/` renders and the hero carousel runs
 - [ ] `/sitemap.xml` lists all services and areas — proves the database
       connection works from inside the container
-- [ ] Run the seed (once finding #1 is fixed), then sign in at `/admin`
+- [ ] Create the first production admin — `railway ssh` into the deployed
+      container, then `npm run create-admin -- you@example.com 'a-strong-password' "Your Name"`
+      — then sign in at `/admin`. (Or run the seed instead, if you want the
+      full demo catalogue too — it also creates an admin when
+      `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD` are set.)
 - [ ] Submit a real booking; confirm it appears in Admin → Bookings
 - [ ] Admin → Messages shows the notification attempts as `SENT` or `SKIPPED`
 - [ ] `curl -I https://sofreshcleaning.co.uk` shows the four security headers

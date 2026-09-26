@@ -224,6 +224,7 @@ model Service {
 
   bookingItems BookingItem[]
   images       ServiceImage[]
+  galleryJobs  GalleryJob[]
 
   @@index([active, sortOrder])
   @@index([group])
@@ -245,6 +246,99 @@ model ServiceImage {
   createdAt DateTime @default(now())
 
   @@index([serviceId, sortOrder])
+}
+
+// ---------------------------------------------------------------- gallery
+
+enum MediaType {
+  PHOTO
+  VIDEO
+}
+
+/// SINGLE uses only the primary slot. BEFORE_AFTER uses primary = before,
+/// secondary = after. An enum rather than an `isStandalone` flag so the name
+/// says which slot means what; the Zod schema rejects mismatched slots.
+enum MediaLayout {
+  SINGLE
+  BEFORE_AFTER
+}
+
+/// One completed job on /gallery. Every descriptive field is optional so a
+/// batch of media can go up first and be labelled later.
+model GalleryJob {
+  id          String    @id @default(cuid())
+  title       String?
+  description String?
+  /// Day the job finished. Shown publicly as month and year only.
+  completedOn DateTime? @db.Date
+  /// Town or area only, e.g. "Colchester". Never a street, number or postcode.
+  area        String?
+
+  serviceId String?
+  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+
+  /// Drafts never reach the public site.
+  published Boolean @default(false)
+  /// Pinned to the top of /gallery; a featured before/after photo pair can
+  /// also replace the homepage showcase.
+  featured  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  media GalleryMedia[]
+
+  @@index([published, featured, completedOn])
+  @@index([serviceId])
+}
+
+/// One frame inside a job: a standalone photo/video, or a before/after pair.
+/// Slots store the R2 object KEY in the public bucket, not a URL, so the
+/// public host can change without rewriting rows and deletes know what to remove.
+model GalleryMedia {
+  id     String      @id @default(cuid())
+  jobId  String
+  job    GalleryJob  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  layout MediaLayout @default(SINGLE)
+
+  primaryType   MediaType
+  primaryKey    String
+  /// Video only: a JPEG frame grabbed in the browser at upload time.
+  primaryPoster String?
+  primaryWidth  Int?
+  primaryHeight Int?
+  primaryAlt    String    @default("")
+
+  secondaryType   MediaType?
+  secondaryKey    String?
+  secondaryPoster String?
+  secondaryWidth  Int?
+  secondaryHeight Int?
+  secondaryAlt    String     @default("")
+
+  caption   String?
+  sortOrder Int      @default(100)
+  createdAt DateTime @default(now())
+
+  @@index([jobId, sortOrder])
+}
+
+/// Uploaded gallery files not yet placed in a job — the sorting inbox. When a
+/// file moves into a job its row is deleted and the R2 object carries on under
+/// the job's GalleryMedia; nothing is re-uploaded.
+model GalleryInboxItem {
+  id           String    @id @default(cuid())
+  type         MediaType
+  key          String    @unique
+  poster       String?
+  width        Int?
+  height       Int?
+  /// The name the file had on the uploader's device, e.g. IMG-20260910-WA0001.jpg.
+  /// WhatsApp names are chronological, so this is also the sort order.
+  originalName String    @default("")
+  createdAt    DateTime  @default(now())
+
+  @@index([originalName, createdAt])
 }
 
 // ---------------------------------------------------------------- bookings

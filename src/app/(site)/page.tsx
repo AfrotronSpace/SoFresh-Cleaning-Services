@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { prisma } from "@/lib/prisma";
 import { loadSettings } from "@/lib/settings";
+import { getShowcasePair } from "@/lib/gallery-data";
 import { ALL_FAQS, HOW_IT_WORKS } from "@/lib/content";
 import { faqJsonLd } from "@/lib/seo";
 import { whatsappLink } from "@/lib/utils";
@@ -41,7 +42,7 @@ async function getHomeData() {
 }
 
 export default async function HomePage() {
-  const [settings, { services, testimonials }] = await Promise.all([loadSettings(), getHomeData()]);
+  const [settings, { services, testimonials }, showcase] = await Promise.all([loadSettings(), getHomeData(), getShowcasePair("restoration-deep-clean")]);
 
   const slides = (settings.heroSlides as HeroSlide[] | null)?.length
     ? (settings.heroSlides as HeroSlide[])
@@ -172,13 +173,32 @@ export default async function HomePage() {
           </div>
 
           <div>
-            <BeforeAfter
-              before="/images/before-oven.jpg"
-              after="/images/after-oven.jpg"
-              beforeAlt="An oven interior heavily coated in baked-on grease before cleaning"
-              afterAlt="The same oven interior clean and clear after a restoration deep clean"
-            />
-            <p className="mt-3 text-sm text-white/50">Drag the seam. Real job, Colchester.</p>
+            {showcase ? (
+              <>
+                <BeforeAfter
+                  before={showcase.frame.primary.url}
+                  after={showcase.frame.secondary.url}
+                  beforeAlt={showcase.frame.primary.alt}
+                  afterAlt={showcase.frame.secondary.alt}
+                />
+                <p className="mt-3 text-sm text-white/50">
+                  Drag the seam. {showcase.job.title}{showcase.job.area ? `, ${showcase.job.area}` : ""}.{" "}
+                  <Link href={`/gallery?job=${showcase.job.id}`} className="text-champagne underline underline-offset-4">
+                    See the whole job
+                  </Link>
+                </p>
+              </>
+            ) : (
+              <>
+                <BeforeAfter
+                  before="/images/before-oven.jpg"
+                  after="/images/after-oven.jpg"
+                  beforeAlt="An oven interior heavily coated in baked-on grease before cleaning"
+                  afterAlt="The same oven interior clean and clear after a restoration deep clean"
+                />
+                <p className="mt-3 text-sm text-white/50">Drag the seam. Real job, Colchester.</p>
+              </>
+            )}
           </div>
         </div>
       </section>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { GALLERY_KEY_PATTERN, MAX_FRAMES_PER_JOB } from "@/lib/gallery";
 
 const phone = z
   .string()
@@ -191,6 +192,67 @@ export const settingsSchema = z.object({
   instagramUrl: z.string().max(400).optional().or(z.literal("")),
   tiktokUrl: z.string().max(400).optional().or(z.literal("")),
 });
+
+const galleryKey = z.string().trim().max(300).regex(GALLERY_KEY_PATTERN, "That file isn't from the gallery uploader");
+
+export const gallerySlotSchema = z.object({
+  type: z.enum(["PHOTO", "VIDEO"]),
+  key: galleryKey,
+  poster: galleryKey.nullable().optional(),
+  width: z.number().int().positive().max(20000).nullable().optional(),
+  height: z.number().int().positive().max(20000).nullable().optional(),
+  alt: z.string().trim().max(160).optional().or(z.literal("")),
+});
+
+/** One file as the inbox uploader records it. */
+export const inboxUploadSchema = gallerySlotSchema.extend({
+  originalName: z.string().trim().max(200).default(""),
+});
+
+export const inboxIdsSchema = z.array(z.string().min(1).max(40)).min(1).max(500);
+
+/** Files the job editor sends back to the inbox instead of deleting. */
+export const inboxReturnSchema = z.array(gallerySlotSchema).max(MAX_FRAMES_PER_JOB * 2);
+
+export const galleryFrameSchema = z
+  .object({
+    layout: z.enum(["SINGLE", "BEFORE_AFTER"]),
+    primary: gallerySlotSchema,
+    secondary: gallerySlotSchema.nullable().optional(),
+    caption: z.string().trim().max(240).optional().or(z.literal("")),
+  })
+  .refine((f) => (f.layout === "BEFORE_AFTER" ? Boolean(f.secondary) : !f.secondary), {
+    message: "A before & after needs both files; a single photo or video has only one",
+    path: ["media"],
+  });
+
+export const galleryJobSchema = z
+  .object({
+    title: z.string().trim().max(120).optional().or(z.literal("")),
+    description: z.string().trim().max(2000).optional().or(z.literal("")),
+    completedOn: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Pick a date")
+      .refine((v) => !Number.isNaN(Date.parse(v)), "Pick a real date")
+      .optional()
+      .or(z.literal("")),
+    // Rule 1 extends to customers: a town, never a street, number or postcode.
+    area: z
+      .string()
+      .trim()
+      .max(80)
+      .regex(/^[^0-9]*$/, "Town or area only — no house numbers or postcodes")
+      .optional()
+      .or(z.literal("")),
+    serviceId: z.string().max(40).optional().or(z.literal("")),
+    published: z.boolean().default(false),
+    featured: z.boolean().default(false),
+    media: z.array(galleryFrameSchema).max(MAX_FRAMES_PER_JOB, `Up to ${MAX_FRAMES_PER_JOB} items per job — split it into two`),
+  })
+  .refine((job) => !job.published || job.media.length > 0, {
+    message: "Add at least one photo or video before putting this on the website",
+    path: ["media"],
+  });
 
 export const messageSchema = z.object({
   recipientId: z.string().optional(),

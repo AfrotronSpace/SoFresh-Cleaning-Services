@@ -6,6 +6,8 @@
 // private bucket and are read back through short-lived presigned URLs, which
 // must not go through the image optimizer because they expire.
 const r2PublicHost = process.env.NEXT_PUBLIC_R2_PUBLIC_HOST;
+// remotePatterns matches hostname and port separately, so "host:port" must be split.
+const r2PublicUrl = r2PublicHost ? new URL(`https://${r2PublicHost}`) : null;
 
 const nextConfig = {
   // Railway runs the app from a Docker image, not Vercel's build pipeline, so
@@ -16,7 +18,9 @@ const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
-      ...(r2PublicHost ? [{ protocol: "https", hostname: r2PublicHost }] : []),
+      ...(r2PublicUrl
+        ? [{ protocol: "https", hostname: r2PublicUrl.hostname, ...(r2PublicUrl.port ? { port: r2PublicUrl.port } : {}) }]
+        : []),
     ],
   },
   async headers() {

@@ -108,6 +108,11 @@ If you add an autoplaying animation, you are breaking this rule.
   server. Railway has no small body-size ceiling the way Vercel did, but
   proxying customer video through your own container's bandwidth for no
   reason would be a worse design anyway. `src/lib/r2.ts` handles it.
+- **React 19 resets a `<form action={…}>` after every submission**, including
+  a failed one — so a server-side validation error wipes every uncontrolled
+  field. `GalleryJobForm` avoids this by submitting via `onSubmit` +
+  `startTransition`. `ServiceForm` and `SettingsForm` still use `action` and
+  have this problem.
 - The two AWS SDK options in `r2.ts` (`requestChecksumCalculation` and
   `signableHeaders`) are load-bearing — removing either breaks uploads only
   against real R2, never locally. The reasons are in the file.
@@ -115,7 +120,7 @@ If you add an autoplaying animation, you are breaking this rule.
 ## Where things live
 
 ```
-prisma/schema.prisma        12 models. Deliberately no payment or card model.
+prisma/schema.prisma        15 models. Deliberately no payment or card model.
 prisma/seed.ts              Real service catalogue, areas, settings, placeholder reviews.
 src/lib/constants.ts        SITE object + all enum→label maps. Start here.
 src/lib/validations.ts      Every Zod schema.
@@ -124,12 +129,15 @@ src/lib/content.ts          Help Centre copy. Feeds the FAQ page, homepage accor
                             AND the FAQPage structured data — one edit, three places.
 src/lib/email.ts            sendEmail() + emailShell(). Always writes a MessageLog row.
 src/lib/whatsapp.ts         Deep link (no setup) or Cloud API (credentials set).
-src/lib/r2.ts               R2 presigned uploads/downloads. Configured and
-                            tested; not yet wired to any UI.
+src/lib/r2.ts               R2 presigned uploads/downloads. Public bucket is used
+                            by Admin → Services and Admin → Gallery; the private
+                            (customer booking) bucket is not wired to any UI yet.
+src/lib/gallery.ts          Browser-safe gallery types, limits and key format.
+src/lib/gallery-data.ts     Gallery queries + row → render-ready object mapping.
 src/app/(site)/             Public pages.
 src/app/(auth)/             Sign in / sign up.
 src/app/dashboard/          Customer's own bookings.
-src/app/admin/              Business dashboard (7 sections).
+src/app/admin/              Business dashboard (8 sections, incl. Gallery).
 src/app/api/                Two POST routes (bookings, contact) plus /api/health
                             for Railway's health check.
 src/app/actions/            Server actions: auth.ts and admin.ts.

@@ -32,6 +32,7 @@ import {
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { mediaTypeFor, maxBytesFor } from "./gallery";
 
 /** 100 MB. R2 accepts up to 5 GB in a single PUT; this is a sane phone-video cap. */
 export const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
@@ -225,24 +226,64 @@ export async function presignPublicImageUpload(opts: {
   const folder = opts.folder.replace(/[^a-z0-9-]/gi, "") || "general";
   const key = `services/${folder}/${crypto.randomUUID()}-${safeFilename(opts.filename)}`;
 
+  return { ok: true, target: await signPublicPut(config, key, opts.contentType, opts.size) };
+}
+
+/**
+ * Presigns a gallery upload (photo, video, or a video's poster frame) into
+ * the PUBLIC bucket under `gallery/YYYY/MM/`. Unlike service photos, video is
+ * allowed here — these are the business's own completed-job clips, published
+ * with the customer's agreement (privacy policy, "How long we keep it").
+ */
+export async function presignPublicGalleryUpload(opts: {
+  filename: string;
+  contentType: string;
+  size: number;
+}): Promise<{ ok: true; target: PublicUploadTarget } | { ok: false; reason: string }> {
+  const config = publicEnv();
+  if (!config) return { ok: false, reason: "Photo storage isn't configured yet" };
+
+  const type = mediaTypeFor(opts.contentType);
+  if (!type) return { ok: false, reason: "Use a JPEG, PNG or WebP photo, or an MP4, MOV or WebM video" };
+  if (!Number.isFinite(opts.size) || opts.size <= 0) {
+    return { ok: false, reason: "That file looks empty" };
+  }
+  if (opts.size > maxBytesFor(type)) {
+    return { ok: false, reason: type === "VIDEO" ? "That video is larger than 100 MB" : "That photo is larger than 15 MB" };
+  }
+
+  const month = new Date().toISOString().slice(0, 7).replace("-", "/");
+  const key = `gallery/${month}/${crypto.randomUUID()}-${safeFilename(opts.filename)}`;
+
+  return { ok: true, target: await signPublicPut(config, key, opts.contentType, opts.size) };
+}
+
+async function signPublicPut(
+  config: NonNullable<ReturnType<typeof publicEnv>>,
+  key: string,
+  contentType: string,
+  size: number,
+): Promise<PublicUploadTarget> {
   const url = await getSignedUrl(
     client(config),
     new PutObjectCommand({
       Bucket: config.bucket,
       Key: key,
-      ContentType: opts.contentType,
-      ContentLength: opts.size,
+      ContentType: contentType,
+      ContentLength: size,
     }),
     {
       expiresIn: UPLOAD_URL_TTL,
       signableHeaders: new Set(["content-type", "content-length"]),
     },
   );
+  return { url, key, publicUrl: `https://${config.publicHost}/${key}`, expiresIn: UPLOAD_URL_TTL };
+}
 
-  return {
-    ok: true,
-    target: { url, key, publicUrl: `https://${config.publicHost}/${key}`, expiresIn: UPLOAD_URL_TTL },
-  };
+/** Public URL for a key in the public bucket, or null when no public host is set. */
+export function publicObjectUrl(key: string) {
+  const host = process.env.NEXT_PUBLIC_R2_PUBLIC_HOST;
+  return host ? `https://${host}/${key}` : null;
 }
 
 /** Used when a photo is removed from a service's gallery. Never throws. */

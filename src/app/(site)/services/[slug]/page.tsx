@@ -5,12 +5,14 @@ import type { Metadata } from "next";
 import { Check, Clock, Minus, CalendarClock, Camera } from "lucide-react";
 import { BookingWizard, type WizardService } from "@/components/booking/booking-wizard";
 import { StickyContactBar } from "@/components/site/sticky-contact-bar";
+import { JobCover } from "@/components/site/job-cover";
 import { JsonLd } from "@/components/site/json-ld";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { prisma } from "@/lib/prisma";
 import { loadSettings } from "@/lib/settings";
+import { getServiceJobs } from "@/lib/gallery-data";
 import { getSession } from "@/lib/auth";
 import { buildMetadata, serviceJsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import { formatMoney, whatsappLink } from "@/lib/utils";
@@ -44,7 +46,7 @@ export default async function ServiceDetailPage({ params }: Params) {
   const service = await getService(slug);
   if (!service) notFound();
 
-  const [settings, session, others] = await Promise.all([
+  const [settings, session, others, jobs] = await Promise.all([
     loadSettings(),
     getSession(),
     prisma.service
@@ -54,6 +56,7 @@ export default async function ServiceDetailPage({ params }: Params) {
         select: { id: true, slug: true, name: true, summary: true, price: true, priceMode: true, negotiable: true, requiresSurvey: true, extras: true },
       })
       .catch(() => []),
+    getServiceJobs(service.id, 4),
   ]);
 
   const user = session
@@ -223,6 +226,26 @@ export default async function ServiceDetailPage({ params }: Params) {
                   </figure>
                 ))}
               </div>
+            </section>
+          )}
+
+          {jobs.length > 0 && (
+            <section className="mt-14" aria-labelledby="service-jobs">
+              <div className="flex flex-wrap items-baseline justify-between gap-3">
+                <h2 id="service-jobs" className="font-display text-xl">Recent jobs</h2>
+                <Link href={`/gallery?service=${service.slug}`} className="text-sm font-medium text-verdant underline underline-offset-4">
+                  See them all
+                </Link>
+              </div>
+              <ul className="mt-5 grid gap-x-5 gap-y-8 sm:grid-cols-2">
+                {jobs.map((job) => (
+                  <li key={job.id}>
+                    <Link href={`/gallery?service=${service.slug}&job=${job.id}`} className="group block">
+                      <JobCover job={job} sizes="(max-width: 640px) 100vw, 33vw" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </section>
           )}
 

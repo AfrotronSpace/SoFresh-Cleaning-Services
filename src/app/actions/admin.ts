@@ -1,10 +1,21 @@
 "use server";
 
 import { revalidatePath, revalidateTag } from "next/cache";
+import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
-import { serviceSchema, settingsSchema, messageSchema } from "@/lib/validations";
+import { deletePublicObject } from "@/lib/r2";
+import {
+  serviceSchema,
+  settingsSchema,
+  messageSchema,
+  galleryJobSchema,
+  inboxUploadSchema,
+  inboxIdsSchema,
+  inboxReturnSchema,
+} from "@/lib/validations";
+import { MAX_FRAMES_PER_JOB, displayNameFromKey } from "@/lib/gallery";
 import { sendEmail, emailShell } from "@/lib/email";
 import { forwardToWhatsApp } from "@/lib/whatsapp";
 import { SITE } from "@/lib/constants";
@@ -149,6 +160,318 @@ export async function deleteServiceAction(formData: FormData) {
   await prisma.service.update({ where: { id }, data: { active: false } });
   revalidatePath("/admin/services");
   revalidatePath("/services");
+}
+
+// ---------------------------------------------------------------- gallery
+
+type GallerySlotInput = { type: "PHOTO" | "VIDEO"; key: string; poster?: string | null; width?: number | null; height?: number | null; alt?: string };
+
+function frameKeys(frame: { primaryKey: string; primaryPoster: string | null; secondaryKey: string | null; secondaryPoster: string | null }) {
+  return [frame.primaryKey, frame.primaryPoster, frame.secondaryKey, frame.secondaryPoster].filter((k): k is string => Boolean(k));
+}
+
+/**
+ * Deletes R2 objects that nothing points at any more. Checking every key first
+ * means a file that moved to the inbox or another job is never deleted from
+ * under it. Best effort: a failed delete leaves an orphan, never a broken page.
+ */
+async function deleteUnreferencedObjects(keys: string[]) {
+  if (keys.length === 0) return;
+  const [media, inbox] = await Promise.all([
+    prisma.galleryMedia.findMany({
+      where: {
+        OR: [
+          { primaryKey: { in: keys } },
+          { primaryPoster: { in: keys } },
+          { secondaryKey: { in: keys } },
+          { secondaryPoster: { in: keys } },
+        ],
+      },
+      select: { primaryKey: true, primaryPoster: true, secondaryKey: true, secondaryPoster: true },
+    }),
+    prisma.galleryInboxItem.findMany({
+      where: { OR: [{ key: { in: keys } }, { poster: { in: keys } }] },
+      select: { key: true, poster: true },
+    }),
+  ]);
+  const live = new Set([...media.flatMap(frameKeys), ...inbox.flatMap((i) => [i.key, i.poster])].filter(Boolean));
+  await Promise.all(keys.filter((key) => !live.has(key)).map((key) => deletePublicObject(key)));
+}
+
+type InboxRow = { type: "PHOTO" | "VIDEO"; key: string; poster: string | null; width: number | null; height: number | null };
+
+function frameFromInbox(item: InboxRow, sortOrder: number) {
+  return {
+    layout: "SINGLE" as const,
+    primaryType: item.type,
+    primaryKey: item.key,
+    primaryPoster: item.poster,
+    primaryWidth: item.width,
+    primaryHeight: item.height,
+    sortOrder,
+  };
+}
+
+function revalidateGallery() {
+  revalidatePath("/gallery");
+  revalidatePath("/services/[slug]", "page");
+  revalidatePath("/");
+  revalidatePath("/admin/gallery");
+}
+
+export async function saveGalleryJobAction(_prev: ActionState, formData: FormData): Promise<ActionState & { id?: string }> {
+  await requireAdmin();
+
+  const id = String(formData.get("id") ?? "");
+  const parsed = galleryJobSchema.safeParse({
+    title: String(formData.get("title") ?? ""),
+    description: String(formData.get("description") ?? ""),
+    completedOn: String(formData.get("completedOn") ?? ""),
+    area: String(formData.get("area") ?? ""),
+    serviceId: String(formData.get("serviceId") ?? ""),
+    published: formData.get("published") === "on",
+    featured: formData.get("featured") === "on",
+    media: json(formData.get("mediaJson")),
+  });
+
+  if (!parsed.success) return { error: "Please check the highlighted fields.", fieldErrors: collect(parsed.error.issues) };
+  const d = parsed.data;
+
+  if (d.serviceId) {
+    const exists = await prisma.service.findUnique({ where: { id: d.serviceId }, select: { id: true } });
+    if (!exists) return { error: "That service no longer exists.", fieldErrors: { serviceId: "Pick another service" } };
+  }
+
+  const slot = (s: GallerySlotInput | null | undefined) => ({
+    type: s?.type ?? null,
+    key: s?.key ?? null,
+    poster: s?.type === "VIDEO" ? (s.poster ?? null) : null,
+    width: s?.width ?? null,
+    height: s?.height ?? null,
+    alt: s?.alt ?? "",
+  });
+
+  const media = d.media.map((frame, index) => {
+    const p = slot(frame.primary);
+    const s = slot(frame.layout === "BEFORE_AFTER" ? frame.secondary : null);
+    return {
+      layout: frame.layout,
+      primaryType: frame.primary.type,
+      primaryKey: frame.primary.key,
+      primaryPoster: p.poster,
+      primaryWidth: p.width,
+      primaryHeight: p.height,
+      primaryAlt: p.alt,
+      secondaryType: s.type,
+      secondaryKey: s.key,
+      secondaryPoster: s.poster,
+      secondaryWidth: s.width,
+      secondaryHeight: s.height,
+      secondaryAlt: s.alt,
+      caption: frame.caption || null,
+      sortOrder: index * 10,
+    };
+  });
+
+  const data = {
+    title: d.title || null,
+    description: d.description || null,
+    completedOn: d.completedOn ? new Date(`${d.completedOn}T00:00:00.000Z`) : null,
+    area: d.area || null,
+    serviceId: d.serviceId || null,
+    published: d.published,
+    featured: d.featured,
+  };
+
+  let savedId = id;
+  let removedKeys: string[] = [];
+  const kept = new Set(media.flatMap(frameKeys));
+
+  if (id) {
+    const before = await prisma.galleryMedia.findMany({ where: { jobId: id } });
+    removedKeys = before.flatMap(frameKeys).filter((key) => !kept.has(key));
+    try {
+      await prisma.galleryJob.update({ where: { id }, data: { ...data, media: { deleteMany: {}, create: media } } });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+        return { error: "That job no longer exists." };
+      }
+      throw error;
+    }
+  } else {
+    const created = await prisma.galleryJob.create({ data: { ...data, media: { create: media } }, select: { id: true } });
+    savedId = created.id;
+  }
+
+  // Files sent back to the inbox leave the job but keep their R2 object. One
+  // still used by another job stays where it is rather than being adopted.
+  const returned = inboxReturnSchema.safeParse(json(formData.get("inboxJson")));
+  const toInbox = returned.success ? returned.data.filter((s) => !kept.has(s.key)) : [];
+  if (toInbox.length > 0) {
+    const keys = toInbox.map((s) => s.key);
+    const inUse = await prisma.galleryMedia.findMany({
+      where: { OR: [{ primaryKey: { in: keys } }, { secondaryKey: { in: keys } }] },
+      select: { primaryKey: true, secondaryKey: true },
+    });
+    const used = new Set(inUse.flatMap((m) => [m.primaryKey, m.secondaryKey]));
+    await prisma.galleryInboxItem.createMany({
+      data: toInbox
+        .filter((s) => !used.has(s.key))
+        .map((s) => ({
+          type: s.type,
+          key: s.key,
+          poster: s.type === "VIDEO" ? (s.poster ?? null) : null,
+          width: s.width ?? null,
+          height: s.height ?? null,
+          originalName: displayNameFromKey(s.key),
+        })),
+      skipDuplicates: true,
+    });
+  }
+
+  await deleteUnreferencedObjects(removedKeys);
+  revalidateGallery();
+
+  const status = d.published ? "It's live on the gallery." : "Saved as a draft — it isn't on the website yet.";
+  return { ok: true, id: savedId, message: `${id ? "Job updated" : "Job created"}. ${status}` };
+}
+
+export async function setGalleryJobPublishedAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const published = formData.get("published") === "true";
+  if (!id) return;
+  // Publishing an empty job would show a blank card, so only allow it with media.
+  await prisma.galleryJob.updateMany({
+    where: { id, ...(published ? { media: { some: {} } } : {}) },
+    data: { published },
+  });
+  revalidateGallery();
+}
+
+export async function deleteGalleryJobAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  const media = await prisma.galleryMedia.findMany({ where: { jobId: id } });
+  // Hard delete: nothing else references a gallery job, unlike a service.
+  await prisma.galleryJob.delete({ where: { id } }).catch(() => null);
+  await deleteUnreferencedObjects(media.flatMap(frameKeys));
+  revalidateGallery();
+  redirect("/admin/gallery");
+}
+
+// ---------------------------------------------------------------- gallery inbox
+
+type InboxResult = { ok: true; id?: string; count?: number } | { ok: false; error: string };
+
+/** Called once per finished upload, so a half-finished batch is never lost. */
+export async function addInboxItemAction(input: unknown): Promise<InboxResult> {
+  await requireAdmin();
+  const parsed = inboxUploadSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "That upload couldn't be recorded." };
+  const s = parsed.data;
+  try {
+    const row = await prisma.galleryInboxItem.create({
+      data: {
+        type: s.type,
+        key: s.key,
+        poster: s.type === "VIDEO" ? (s.poster ?? null) : null,
+        width: s.width ?? null,
+        height: s.height ?? null,
+        originalName: s.originalName || displayNameFromKey(s.key),
+      },
+      select: { id: true },
+    });
+    return { ok: true, id: row.id };
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return { ok: false, error: "That file is already in the inbox." };
+    }
+    throw error;
+  }
+}
+
+/** Takes the chosen files out of the inbox; fails if any were claimed in the meantime. */
+async function claimInboxItems(tx: Prisma.TransactionClient, ids: string[]) {
+  const items = await tx.galleryInboxItem.findMany({
+    where: { id: { in: ids } },
+    orderBy: [{ originalName: "asc" }, { createdAt: "asc" }],
+  });
+  const { count } = await tx.galleryInboxItem.deleteMany({ where: { id: { in: items.map((i) => i.id) } } });
+  if (items.length === 0 || count !== items.length) throw new InboxConflict();
+  return items;
+}
+
+class InboxConflict extends Error {}
+
+const INBOX_CONFLICT = "Some of those files have already been moved. Refresh the inbox and try again.";
+
+export async function createJobFromInboxAction(input: unknown): Promise<InboxResult> {
+  await requireAdmin();
+  const parsed = inboxIdsSchema.max(MAX_FRAMES_PER_JOB).safeParse(input);
+  if (!parsed.success) return { ok: false, error: `Pick between 1 and ${MAX_FRAMES_PER_JOB} files for one job.` };
+
+  try {
+    const job = await prisma.$transaction(async (tx) => {
+      const items = await claimInboxItems(tx, parsed.data);
+      return tx.galleryJob.create({
+        data: { media: { create: items.map((item, index) => frameFromInbox(item, index * 10)) } },
+        select: { id: true },
+      });
+    });
+    return { ok: true, id: job.id };
+  } catch (error) {
+    if (error instanceof InboxConflict) return { ok: false, error: INBOX_CONFLICT };
+    throw error;
+  }
+}
+
+export async function addInboxToJobAction(input: unknown, jobId: unknown): Promise<InboxResult> {
+  await requireAdmin();
+  const parsed = inboxIdsSchema.safeParse(input);
+  if (!parsed.success || typeof jobId !== "string") return { ok: false, error: "Pick some files and a job." };
+
+  const job = await prisma.galleryJob.findUnique({
+    where: { id: jobId },
+    select: {
+      published: true,
+      _count: { select: { media: true } },
+      media: { orderBy: { sortOrder: "desc" }, take: 1, select: { sortOrder: true } },
+    },
+  });
+  if (!job) return { ok: false, error: "That job no longer exists." };
+
+  const room = MAX_FRAMES_PER_JOB - job._count.media;
+  if (parsed.data.length > room) {
+    return { ok: false, error: room > 0 ? `That job only has room for ${room} more.` : "That job is full." };
+  }
+
+  const start = job.media[0]?.sortOrder ?? 0;
+  try {
+    const count = await prisma.$transaction(async (tx) => {
+      const items = await claimInboxItems(tx, parsed.data);
+      await tx.galleryMedia.createMany({
+        data: items.map((item, index) => ({ jobId, ...frameFromInbox(item, start + (index + 1) * 10) })),
+      });
+      return items.length;
+    });
+    if (job.published) revalidateGallery();
+    return { ok: true, count };
+  } catch (error) {
+    if (error instanceof InboxConflict) return { ok: false, error: INBOX_CONFLICT };
+    throw error;
+  }
+}
+
+export async function deleteInboxItemsAction(input: unknown): Promise<InboxResult> {
+  await requireAdmin();
+  const parsed = inboxIdsSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Pick some files to delete." };
+  const items = await prisma.galleryInboxItem.findMany({ where: { id: { in: parsed.data } } });
+  await prisma.galleryInboxItem.deleteMany({ where: { id: { in: items.map((i) => i.id) } } });
+  await deleteUnreferencedObjects(items.flatMap((i) => [i.key, i.poster]).filter((k): k is string => Boolean(k)));
+  return { ok: true, count: items.length };
 }
 
 // ---------------------------------------------------------------- bookings

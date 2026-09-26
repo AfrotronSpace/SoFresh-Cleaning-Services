@@ -212,7 +212,12 @@ properties of undefined` and the customer loses the whole form.
 **Fix:** drop the `!data.isCustom &&` condition — the length check should
 apply whenever `items` is non-empty, regardless of `isCustom`.
 
-### 10. The before/after seam is misaligned until you drag it
+### 10. ~~The before/after seam is misaligned until you drag it~~ — resolved 26 Sep 2026
+
+Fixed with the clip-path approach below: both images now sit in identical
+full-size layers and the top one is clipped, so no measuring is needed.
+Checked visually — the seam lines up on first render and after dragging.
+
 
 `src/components/site/before-after.tsx:52`
 

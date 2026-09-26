@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { LayoutDashboard, CalendarCheck, Sparkles, Users, Inbox, Send, Settings } from "lucide-react";
 import { Logo } from "@/components/site/logo";
 import { Button } from "@/components/ui/button";
 import { AdminNav } from "@/components/admin/admin-nav";
@@ -7,18 +6,6 @@ import { requireAdmin } from "@/lib/auth";
 import { signOutAction } from "@/app/actions/auth";
 
 export const dynamic = "force-dynamic";
-
-export const NAV = [
-  { href: "/admin", label: "Overview", icon: "LayoutDashboard" },
-  { href: "/admin/bookings", label: "Bookings", icon: "CalendarCheck" },
-  { href: "/admin/services", label: "Services", icon: "Sparkles" },
-  { href: "/admin/customers", label: "Customers", icon: "Users" },
-  { href: "/admin/enquiries", label: "Enquiries", icon: "Inbox" },
-  { href: "/admin/messages", label: "Messages", icon: "Send" },
-  { href: "/admin/settings", label: "Settings", icon: "Settings" },
-] as const;
-
-export const ICONS = { LayoutDashboard, CalendarCheck, Sparkles, Users, Inbox, Send, Settings };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const admin = await requireAdmin();

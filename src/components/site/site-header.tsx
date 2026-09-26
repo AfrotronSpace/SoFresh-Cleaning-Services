@@ -11,6 +11,7 @@ import { cn, telLink, whatsappLink } from "@/lib/utils";
 
 const LINKS = [
   { href: "/services", label: "Services" },
+  { href: "/gallery", label: "Our work" },
   { href: "/areas", label: "Areas we cover" },
   { href: "/help", label: "Help centre" },
   { href: "/contact", label: "Contact" },

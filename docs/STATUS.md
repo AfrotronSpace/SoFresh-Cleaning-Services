@@ -8,11 +8,12 @@ migrated in this working tree.
 
 ## Built and working
 
-### Public site — 15 routes
+### Public site — 16 routes
 | Route | Notes |
 |---|---|
 | `/` | Hero carousel, trust strip, catalogue, restoration showcase with before/after seam, process, reviews, areas, FAQ, CTA |
-| `/services` · `/services/[slug]` | Catalogue grouped into the client's three headings; detail pages carry includes/excludes, FAQs, JSON-LD and an inline booking wizard |
+| `/services` · `/services/[slug]` | Catalogue grouped into the client's three headings; detail pages carry includes/excludes, FAQs, JSON-LD, up to four "Recent jobs" from the gallery, and an inline booking wizard |
+| `/gallery` | Completed jobs ("Our work"). Filter chips per service, 24 per page, a viewer dialog with before/after sliders and click-to-play video. `?job=<id>` deep-links straight into a job. The homepage showcase uses the newest *featured* before/after photo pair (restoration first), falling back to the placeholder oven |
 | `/areas` · `/areas/[slug]` | Seven seeded areas; the detail page falls back to `SiteSetting.serviceAreas` for anything not in `AreaCovered` |
 | `/book` | Six-step wizard, `?service=slug` preselects, prefills from the signed-in user |
 | `/booking-received/[reference]` | Confirmation with reference, next steps, WhatsApp photo prompt |
@@ -22,16 +23,39 @@ migrated in this working tree.
 | `/sign-in` · `/sign-up` | JWT session, 30-day httpOnly cookie |
 | `/dashboard` | Customer's own bookings with status, quote and recent events |
 
-### Admin dashboard — 7 sections
+### Admin dashboard — 8 sections
 Overview (counts, pipeline value, config warnings), Bookings (list + detail
 with status/quote editor, event trail, WhatsApp forward), Services (full CRUD
 over every catalogue field, including a header-image and gallery uploader
 that presigns straight to R2's public bucket — see `docs/DEPLOYMENT.md` —
-plus per-service FAQs, keyword tags and an icon), Customers, Enquiries,
+plus per-service FAQs, keyword tags and an icon), Gallery (see below), Customers, Enquiries,
 Messages (every email and WhatsApp attempt, including skipped ones), Settings.
 
+**Gallery (added 26 Sep 2026).** A `GalleryJob` (title, description, date,
+town, optional service link — all optional) holds ordered `GalleryMedia`
+frames. Each frame is `SINGLE` (primary slot only) or `BEFORE_AFTER` (primary
+= before, secondary = after); each slot is a photo or video stored as an R2
+key in the public bucket. The editor takes a whole batch of files by drag and
+drop, sorts them by name (WhatsApp names are chronological), and lets you
+tick two to pair them, then swap/split/reorder. Videos get a poster frame
+grabbed in the browser at upload. Jobs start as drafts; deleting a job, or
+removing a file from one, deletes the object from R2 too. A database CHECK
+constraint rejects a frame whose slots don't match its layout.
+
+**Gallery inbox (`/admin/gallery/inbox`).** For big unsorted batches: upload
+everything at once, and each file is recorded (`GalleryInboxItem`) the moment
+its upload finishes, so an interrupted batch loses nothing. Select files
+(click, shift-click for a range, filter by photos/videos, preview) and either
+create a draft job from them or add them to an existing job. Moving a file
+never re-uploads it, because the same R2 object changes owner. The job
+editor's *Send back to inbox* button takes a file out of a job without
+deleting it, which is also how files move between jobs. R2 deletes only
+happen for keys that no job or inbox row still references. Verified end
+to end against a local Postgres and a stand-in bucket; **not yet tried
+against real R2**, which needs the public bucket from `docs/DEPLOYMENT.md`.
+
 ### Platform
-- 12 Prisma models, no payment or card model anywhere by design
+- 15 Prisma models, no payment or card model anywhere by design
 - Zod validation shared by API routes and server actions
 - Email via nodemailer, degrading to a logged `SKIPPED` with no SMTP
 - WhatsApp in two modes: zero-setup `wa.me` deep links, or Meta Cloud API
@@ -49,10 +73,13 @@ Messages (every email and WhatsApp attempt, including skipped ones), Settings.
    images, the literal `&rsquo;` on six service pages, placeholder reviews
    presented as genuine.
 2. **Real photography.** Everything in `public/images/` is a generated
-   placeholder with the word PLACEHOLDER printed on it. AFT-F-01 B3 and S12
-   confirm the client has genuine before-and-after sets ready to send. This is
-   the single highest-impact remaining item — it is a premium positioning play
-   and the current images actively undermine it.
+   placeholder with the word PLACEHOLDER printed on it. The client has sent
+   200+ photos and videos (via WhatsApp, unsorted) and confirmed customer
+   consent to publish them. The `/gallery` pipeline to take them is built;
+   what's left is creating the public R2 bucket, then uploading the whole
+   batch to Admin → Gallery → Inbox and grouping it into jobs. Still worth a human pass over every photo for
+   faces, house numbers, post, or a business client's logo (G3). Service hero
+   images and the hero carousel are still placeholders.
 3. **Real review text.** Six Google reviews, attributed as first name +
    initial per AFT-F-01 G1.
 4. **Legal sign-off.** `SETUP-NOTES.md` §4 — the cancellation and booking-fee

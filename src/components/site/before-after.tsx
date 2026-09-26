@@ -14,12 +14,17 @@ export function BeforeAfter({
   beforeAlt,
   afterAlt,
   className,
+  aspectRatio,
+  sizes = "(max-width: 768px) 100vw, 50vw",
 }: {
   before: string;
   after: string;
   beforeAlt: string;
   afterAlt: string;
   className?: string;
+  /** width / height — overrides the default 4:3 / 16:10 frame, e.g. for portrait phone photos. */
+  aspectRatio?: number;
+  sizes?: string;
 }) {
   const [position, setPosition] = useState(52);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -36,7 +41,8 @@ export function BeforeAfter({
   return (
     <div
       ref={containerRef}
-      className={cn("relative aspect-[4/3] w-full select-none overflow-hidden rounded-2xl bg-mist md:aspect-[16/10]", className)}
+      className={cn("relative aspect-[4/3] w-full touch-pan-y select-none overflow-hidden rounded-2xl bg-mist md:aspect-[16/10]", className)}
+      style={aspectRatio ? { aspectRatio } : undefined}
       onPointerDown={(e) => {
         dragging.current = true;
         (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
@@ -46,12 +52,11 @@ export function BeforeAfter({
       onPointerUp={() => (dragging.current = false)}
       onPointerLeave={() => (dragging.current = false)}
     >
-      <Image src={after} alt={afterAlt} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
+      <Image src={after} alt={afterAlt} fill sizes={sizes} className="object-cover" />
 
-      <div className="absolute inset-0 overflow-hidden" style={{ width: `${position}%` }}>
-        <div className="relative h-full" style={{ width: containerRef.current?.offsetWidth ?? "100%" }}>
-          <Image src={before} alt={beforeAlt} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
-        </div>
+      {/* Same box as the after image, clipped — so both crop identically with no measuring. */}
+      <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}>
+        <Image src={before} alt={beforeAlt} fill sizes={sizes} className="object-cover" />
       </div>
 
       <span className="pointer-events-none absolute left-4 top-4 rounded-full bg-forest-deep/80 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">

@@ -291,10 +291,11 @@ compute for no benefit. Keep the architecture as built.
    are written before the booking row is confirmed, so a customer who closes
    the tab mid-upload leaves an orphan.
 
-### A second, PUBLIC bucket for service photos
+### A second, PUBLIC bucket for service photos and the gallery
 
-Admin → Services → photos (hero image + gallery) uses a separate bucket from
-the private one above — these are marketing images, not customers' homes, and
+Admin → Services → photos (hero image + gallery) and Admin → Gallery (the
+completed-jobs page at `/gallery`, photos **and video**) use a separate
+bucket from the private one above — these are marketing images, not customers' homes, and
 are meant to be rendered directly in `<img>`/`next/image` tags at full speed
 rather than through an expiring presigned URL.
 
@@ -325,10 +326,13 @@ MAX_UPLOAD_BYTES                              // 100 MB
 ALLOWED_MIME_TYPES                            // jpeg/png/webp/heic/heif, mp4/mov/webm
 
 isR2PublicConfigured()                        // the public bucket above
-presignPublicImageUpload({ folder, filename, contentType, size })
+presignPublicImageUpload({ folder, filename, contentType, size })  // services/<slug>/…
+presignPublicGalleryUpload({ filename, contentType, size })       // gallery/YYYY/MM/…
+publicObjectUrl(key)                          // https://<public host>/<key>, or null
 deletePublicObject(key)                       // never throws
 MAX_IMAGE_UPLOAD_BYTES                        // 15 MB
 ALLOWED_IMAGE_MIME_TYPES                      // jpeg/png/webp
+// gallery limits live in src/lib/gallery.ts: photos 15 MB, video 100 MB (mp4/webm/mov)
 ```
 
 Two AWS SDK options in that file are load-bearing, found by inspecting real
@@ -344,6 +348,15 @@ booking wizard, a presign API route, writing `Attachment` rows, rendering
 them in the admin booking detail (which already fetches `attachments: true`
 but never renders it), and a short privacy-policy paragraph. Tracked as item
 6 in `docs/STATUS.md`.
+
+The gallery stores object **keys**, not URLs, so moving the bucket to a
+custom domain later only means changing `NEXT_PUBLIC_R2_PUBLIC_HOST` (and
+rebuilding — `next.config.mjs` reads it for `images.remotePatterns`). Videos
+are served straight from R2 to visitors, which is fine because R2 has no
+egress fees; `<video preload="none">` means nothing downloads until someone
+presses play. Uploaded-but-never-saved files (someone closes the editor
+mid-batch) are left behind — the editor warns before leaving, but a lifecycle
+rule isn't possible here because live objects share the same prefix.
 
 The PUBLIC bucket (service catalogue photos, above) is wired end to end —
 `/api/admin/uploads` presigns, Admin → Services uploads hero + gallery images

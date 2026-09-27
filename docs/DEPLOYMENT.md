@@ -395,9 +395,12 @@ per review) one block should last the full 6 months.
 3. Create a **Mail Agent** for the site and copy its **Send Mail token**
    into `ZOHO_CPAAS_TOKEN`. The console copies it with a `Zoho-enczapikey `
    prefix, and the code accepts it with or without.
-4. On the same agent's API setup page, check the API URL. If it isn't
-   `https://cpaas.zoho.com/v1.1/email` (a non-US data centre), put the
-   exact URL in `ZOHO_CPAAS_API_URL`.
+4. **Set `ZOHO_CPAAS_API_URL="https://cpaas.zoho.eu/v1.1/email"`.** The
+   client's account is on Zoho's **EU** data centre (confirmed 27 Sep 2026:
+   the token is accepted only by `cpaas.zoho.eu`). Left unset, the code
+   defaults to the US host, which rejects the token with
+   `401 TM_4001 Invalid API Token found`, so every email logs as `FAILED`.
+   The URL is also shown on the Mail Agent's Setup Info → API tab.
 5. Set `EMAIL_FROM` to an address on the verified domain, e.g.
    `So Fresh Cleaning Service <info@sofreshcleaning.co.uk>`. Replies go to
    `SITE.email` (or the customer, on admin notifications), not to this address.

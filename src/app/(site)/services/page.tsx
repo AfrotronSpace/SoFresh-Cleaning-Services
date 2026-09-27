@@ -59,8 +59,8 @@ export default async function ServicesPage() {
             Everything we clean, and exactly what that includes
           </h1>
           <p className="mt-6 max-w-[62ch] text-[1.0625rem] leading-relaxed text-sage md:text-lg">
-            We specialise in the labour-intensive jobs — properties that have got beyond a normal clean. Each page below sets
-            out the scope, what falls outside it, and how we work out the price.
+            We specialise in labour-intensive, detail-led work: properties that need properly working through, not a quick
+            surface clean. Each page below sets out the scope, what falls outside it, and how we work out the price.
           </p>
         </div>
       </header>

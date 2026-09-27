@@ -56,7 +56,7 @@ export const FAQ_GROUPS: { title: string; intro: string; faqs: Faq[] }[] = [
   },
   {
     title: "Changing or cancelling",
-    intro: "Life happens. Here is exactly where you stand.",
+    intro: "Plans change. Here is exactly where you stand.",
     faqs: [
       {
         q: "What if I need to cancel?",

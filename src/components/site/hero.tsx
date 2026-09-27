@@ -141,12 +141,12 @@ export const FALLBACK_SLIDES: HeroSlide[] = [
   {
     image: "/images/hero-kitchen.jpg",
     headline: "Some properties need more than a clean.",
-    sub: "Our restoration deep clean is a team, a full day, and a methodical route through every surface — for homes that have got beyond a normal tidy-up.",
+    sub: "Our restoration deep clean is a team working methodically through every surface, edge and fitting until the property is genuinely refreshed and finished.",
   },
   {
     image: "/images/hero-bathroom.jpg",
-    headline: "Get the deposit back in full.",
-    sub: "End of tenancy cleans finished to the standard letting agents actually inspect against, across Colchester, Ipswich and Braintree.",
+    headline: "Ready for the inventory check.",
+    sub: "End of tenancy cleans worked through to the standard letting agents actually inspect against, across Colchester, Ipswich and Braintree.",
   },
   {
     image: "/images/hero-window.jpg",

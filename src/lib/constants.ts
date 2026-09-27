@@ -16,7 +16,7 @@ export const SITE = {
 export const SERVICE_GROUPS: Record<ServiceGroup, { label: string; blurb: string }> = {
   SIGNATURE: {
     label: "Signature restoration & one-off cleaning",
-    blurb: "For properties that need considerably more than a tidy-up.",
+    blurb: "For properties that need properly working through, not a surface tidy-up.",
   },
   TRANSITION: {
     label: "Moving & property transition",

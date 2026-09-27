@@ -3,10 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, Phone, X, User } from "lucide-react";
+import { Clock, Mail, Menu, MessageCircle, Phone, User, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Logo } from "@/components/site/logo";
-import { Button } from "@/components/ui/button";
 import { cn, telLink, whatsappLink } from "@/lib/utils";
 
 const LINKS = [
@@ -18,14 +17,23 @@ const LINKS = [
   { href: "/contact", label: "Contact" },
 ];
 
+/**
+ * Two tiers: a slim contact bar that scrolls away, then the sticky main bar
+ * with the logo and page links only. Contact lives in the top bar at every
+ * width, so the mobile menu is links alone.
+ */
 export function SiteHeader({
   phone,
   whatsapp,
+  email,
+  openingHours,
   signedIn,
   isAdmin,
 }: {
   phone: string;
   whatsapp: string;
+  email: string;
+  openingHours: string;
   signedIn: boolean;
   isAdmin: boolean;
 }) {
@@ -36,7 +44,7 @@ export function SiteHeader({
   useEffect(() => setOpen(false), [pathname]);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
+    const onScroll = () => setScrolled(window.scrollY > 48);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -49,60 +57,79 @@ export function SiteHeader({
     };
   }, [open]);
 
+  const accountHref = signedIn ? (isAdmin ? "/admin" : "/dashboard") : "/sign-in";
+  const accountLabel = signedIn ? (isAdmin ? "Admin" : "Your bookings") : "Sign in";
+
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-50 border-b transition-colors duration-300",
-        scrolled || open ? "border-border bg-white/95 backdrop-blur-md" : "border-transparent bg-white",
-      )}
-    >
-      <div className="shell flex h-16 items-center justify-between gap-4 md:h-[4.5rem]">
-        <Logo />
+    <>
+      <div className="bg-forest text-[0.8125rem] text-white/80">
+        <div className="shell flex h-10 items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-5">
+            <a href={telLink(phone)} className="inline-flex items-center gap-1.5 whitespace-nowrap font-medium text-white transition-colors hover:text-champagne-soft">
+              <Phone className="size-3.5" />
+              {phone}
+            </a>
+            <a href={`mailto:${email}`} className="hidden items-center gap-1.5 truncate transition-colors hover:text-white md:inline-flex">
+              <Mail className="size-3.5 shrink-0" />
+              {email}
+            </a>
+          </div>
 
-        <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
-          {LINKS.map((link) => {
-            const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                aria-current={active ? "page" : undefined}
-                className={cn(
-                  "relative whitespace-nowrap rounded-md px-2.5 py-2 text-[0.9375rem] font-medium transition-colors xl:px-3.5",
-                  active ? "text-forest" : "text-sage hover:text-forest",
-                )}
-              >
-                {link.label}
-                {active && <span className="absolute inset-x-2.5 -bottom-px h-0.5 rounded-full bg-champagne xl:inset-x-3.5" />}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="flex items-center gap-2">
-          <a
-            href={telLink(phone)}
-            className="hidden items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-[0.9375rem] font-medium text-forest transition-colors hover:bg-mist md:inline-flex lg:hidden xl:inline-flex"
-          >
-            <Phone className="size-4" />
-            {phone}
-          </a>
-
-          <Button asChild variant="whatsapp" size="sm" className="hidden sm:inline-flex">
+          <div className="flex shrink-0 items-center gap-4">
+            <span className="hidden items-center gap-1.5 lg:inline-flex">
+              <Clock className="size-3.5" />
+              {openingHours}
+            </span>
             <a
               href={whatsappLink(whatsapp, "Hi, I'd like a quote for a clean.")}
               target="_blank"
               rel="noopener noreferrer"
+              className="inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#1f8f4e] px-3 font-medium text-white transition-colors hover:bg-[#177a41]"
             >
-              Message on WhatsApp
+              <MessageCircle className="size-3.5" />
+              <span className="sm:hidden">WhatsApp</span>
+              <span className="hidden sm:inline">Message on WhatsApp</span>
             </a>
-          </Button>
-
-          <Button asChild variant="ghost" size="icon" className="hidden lg:inline-flex" aria-label={signedIn ? "Your account" : "Sign in"}>
-            <Link href={signedIn ? (isAdmin ? "/admin" : "/dashboard") : "/sign-in"}>
-              <User className="size-5" />
+            <Link
+              href={accountHref}
+              aria-label={accountLabel}
+              className="inline-flex items-center gap-1.5 whitespace-nowrap transition-colors hover:text-white"
+            >
+              <User className="size-4 md:size-3.5" />
+              <span className="hidden md:inline">{accountLabel}</span>
             </Link>
-          </Button>
+          </div>
+        </div>
+      </div>
+
+      <header
+        className={cn(
+          "sticky top-0 z-50 border-b transition-colors duration-300",
+          scrolled || open ? "border-border bg-white/95 backdrop-blur-md" : "border-transparent bg-white",
+        )}
+      >
+        <div className="shell flex h-16 items-center justify-between gap-6 md:h-[4.5rem]">
+          <Logo />
+
+          <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
+            {LINKS.map((link) => {
+              const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "relative whitespace-nowrap rounded-md px-3.5 py-2 text-[0.9375rem] font-medium transition-colors",
+                    active ? "text-forest" : "text-sage hover:text-forest",
+                  )}
+                >
+                  {link.label}
+                  {active && <span className="absolute inset-x-3.5 -bottom-px h-0.5 rounded-full bg-champagne" />}
+                </Link>
+              );
+            })}
+          </nav>
 
           <button
             type="button"
@@ -115,47 +142,33 @@ export function SiteHeader({
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
         </div>
-      </div>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            id="mobile-nav"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.24, ease: [0.32, 0.72, 0, 1] }}
-            className="overflow-hidden border-t border-border bg-white lg:hidden"
-          >
-            <nav aria-label="Mobile" className="shell flex flex-col py-3">
-              {LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="border-b border-border/70 py-3.5 font-display text-lg text-forest last:border-0"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <div className="flex flex-col gap-2 pb-4 pt-4">
-                <Button asChild variant="whatsapp" size="lg">
-                  <a href={whatsappLink(whatsapp, "Hi, I'd like a quote for a clean.")} target="_blank" rel="noopener noreferrer">
-                    Message on WhatsApp
-                  </a>
-                </Button>
-                <Button asChild variant="outline" size="lg">
-                  <a href={telLink(phone)}>Call {phone}</a>
-                </Button>
-                <Button asChild variant="ghost" size="lg">
-                  <Link href={signedIn ? (isAdmin ? "/admin" : "/dashboard") : "/sign-in"}>
-                    {signedIn ? "Go to your bookings" : "Sign in"}
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              id="mobile-nav"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.24, ease: [0.32, 0.72, 0, 1] }}
+              className="overflow-hidden border-t border-border bg-white lg:hidden"
+            >
+              <nav aria-label="Mobile" className="shell flex flex-col py-3">
+                {LINKS.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    aria-current={pathname === link.href || pathname.startsWith(`${link.href}/`) ? "page" : undefined}
+                    className="border-b border-border/70 py-3.5 font-display text-lg text-forest last:border-0"
+                  >
+                    {link.label}
                   </Link>
-                </Button>
-              </div>
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </header>
+                ))}
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </header>
+    </>
   );
 }

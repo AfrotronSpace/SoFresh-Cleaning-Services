@@ -18,6 +18,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <SiteHeader
         phone={settings.phone}
         whatsapp={settings.whatsapp}
+        email={settings.email}
+        openingHours={settings.openingHours}
         signedIn={Boolean(session)}
         isAdmin={session?.role === "ADMIN"}
       />

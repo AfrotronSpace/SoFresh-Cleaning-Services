@@ -690,8 +690,8 @@ export async function sendMessageAction(_prev: ActionState, formData: FormData):
   });
 
   revalidatePath("/admin/messages");
-  if (result.skipped) return { ok: true, message: "Saved. No mail server is connected yet, so nothing was sent." };
-  return result.ok ? { ok: true, message: "Email sent." } : { error: "The mail server rejected that. Check the message log." };
+  if (result.skipped) return { ok: true, message: "Saved. No email service is connected yet, so nothing was sent." };
+  return result.ok ? { ok: true, message: "Email sent." } : { error: "The email service rejected that. Check the message log." };
 }
 
 // ---------------------------------------------------------------- settings

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { loadSettings } from "@/lib/settings";
+import { isEmailConfigured } from "@/lib/email";
 import { formatDate, formatMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -33,9 +34,9 @@ export default async function AdminOverviewPage() {
   ]);
 
   const warnings = [
-    !process.env.SMTP_HOST && {
+    !isEmailConfigured() && {
       icon: MailWarning,
-      text: "No mail server is connected, so notification emails are logged but not sent. Add your SMTP details to .env.",
+      text: "No email service is connected, so notification emails are logged but not sent. Add ZOHO_CPAAS_TOKEN to the environment.",
     },
     settings.forwardBookingsToWhatsapp &&
       !process.env.WHATSAPP_ACCESS_TOKEN && {

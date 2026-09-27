@@ -308,9 +308,9 @@ and everything it saves waits in the moderation queue. A flood would bury real
 reviews in Admin → Reviews rather than reach the public site.
 
 With no rate limiting, `/api/contact` and `/api/bookings` will each accept
-unlimited submissions, and every one sends **two** emails once SMTP is
+unlimited submissions, and every one sends **two** emails once email is
 configured — an open relay for anyone who wants to burn the client's sending
-reputation.
+reputation, and since Zoho CPaaS bills per email, their credit too.
 
 **Fix:** change the honeypot to `z.string().optional()` so the silent-200
 branch actually runs, then add rate limiting. Cloudflare Turnstile is the
@@ -482,7 +482,7 @@ appointment". `SiteSetting.tagline` is the field that belongs there.
   and the "no payment is taken through this website" line appears on the hero,
   the homepage process block, the booking wizard, the confirmation page and
   every email footer.
-- **Runs with no SMTP and no WhatsApp API.** Verified by building and booting
+- **Runs with no email service and no WhatsApp API.** Verified by building and booting
   with neither configured; both paths write a `MessageLog` row with status
   `SKIPPED` and an explanatory `error` string.
 - **One non-user-triggered animation.** Only `hero.tsx` has a `setInterval`;

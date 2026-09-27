@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/admin/page-header";
 import { SettingsForm } from "@/components/admin/settings-form";
 import { requireAdmin } from "@/lib/auth";
 import { loadSettings } from "@/lib/settings";
+import { isEmailConfigured } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Settings", robots: { index: false, follow: false } };
@@ -18,7 +19,7 @@ export default async function AdminSettingsPage() {
         description="Everything you can change without a developer. Saves take effect on the website immediately."
       />
       <SettingsForm
-        smtpConfigured={Boolean(process.env.SMTP_HOST)}
+        emailConfigured={isEmailConfigured()}
         whatsappApiConfigured={Boolean(process.env.WHATSAPP_ACCESS_TOKEN)}
         initial={{
           businessName: settings.businessName,

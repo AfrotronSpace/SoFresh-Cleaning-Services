@@ -66,13 +66,13 @@ can check the reviewer is a real customer. Names are stored as first name +
 initial (G1); towns reject digits, like gallery areas (rule 1). A review can
 be linked to a gallery job and then shows inside that job. The admin gets an
 email per new review, switchable in Settings (`emailReviewToAdmin`); with no
-SMTP it degrades to a `SKIPPED` log like everything else. The Overview shows
+email service it degrades to a `SKIPPED` log like everything else. The Overview shows
 a banner while anything is waiting.
 
 ### Platform
 - 15 Prisma models, no payment or card model anywhere by design
 - Zod validation shared by API routes and server actions
-- Email via nodemailer, degrading to a logged `SKIPPED` with no SMTP
+- Email via the Zoho CPaaS HTTPS API, degrading to a logged `SKIPPED` with no token
 - WhatsApp in two modes: zero-setup `wa.me` deep links, or Meta Cloud API
 - `sitemap.xml`, `robots.txt`, PWA manifest, generated OG image, JSON-LD
   (`HomeAndConstructionBusiness`, `Service`, `FAQPage`, `BreadcrumbList`)

@@ -47,7 +47,7 @@ asking. Breaking one is a business problem, not a style problem.
    switches (`emailBookingToCustomer`, `emailBookingToAdmin`,
    `forwardBookingsToWhatsapp`) plus `cancellationHours` and
    `reclaimWindowHours` are admin-editable. Never hardcode a branch on them.
-5. **The site must run with no SMTP and no WhatsApp API configured.** Both
+5. **The site must run with no email service and no WhatsApp API configured.** Both
    integrations degrade to a `MessageLog` row with status `SKIPPED`. Never let
    a missing credential break a booking.
 
@@ -128,6 +128,8 @@ src/lib/settings.ts         loadSettings() — cached SiteSetting with a safe fa
 src/lib/content.ts          Help Centre copy. Feeds the FAQ page, homepage accordion
                             AND the FAQPage structured data — one edit, three places.
 src/lib/email.ts            sendEmail() + emailShell(). Always writes a MessageLog row.
+                            Sends via the Zoho CPaaS HTTPS API, never SMTP (Railway
+                            blocks it below Pro); ZOHO_CPAAS_TOKEN switches it on.
 src/lib/whatsapp.ts         Deep link (no setup) or Cloud API (credentials set).
 src/lib/r2.ts               R2 presigned uploads/downloads. Public bucket is used
                             by Admin → Services and Admin → Gallery; the private

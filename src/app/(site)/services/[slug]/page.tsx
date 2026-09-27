@@ -83,7 +83,7 @@ export default async function ServiceDetailPage({ params }: Params) {
     service.priceMode === "QUOTE_ONLY" || !service.price
       ? service.requiresSurvey
         ? "Priced after a free assessment"
-        : "Priced once we&rsquo;ve seen photos"
+        : "Priced once we’ve seen photos"
       : service.priceMode === "PER_HOUR"
         ? `${formatMoney(service.price.toString())} per hour`
         : service.priceMode === "FROM"

@@ -133,12 +133,14 @@ export default async function HomePage() {
             </h2>
             <div className="mt-6 max-w-[58ch] space-y-4 text-[1.0625rem] leading-relaxed text-white/70">
               <p>
-                This is for clients who want a property cleaned properly, not made to look clean from a distance. We allocate
-                the team and the hours to the condition of the building rather than to a price list.
+                For clients who want a genuinely thorough finish, with every room properly worked through and nothing rushed.
+                Beyond the skirting boards, switches, doors and frames, the team works into the finer
+                detail: built-up residue, overlooked edges, corners, fittings and grease, the areas a rushed clean always misses.
               </p>
               <p>
-                A big job might be three to five cleaners for seven to ten hours or more. We work methodically through the
-                agreed areas, go back over the stubborn details, and run a final check before we hand it back to you.
+                Where suitable, we use steam in kitchens and bathrooms to lift stubborn grime and sanitise the surfaces. The team
+                and the hours are allocated to the condition of the property, not a price list. A big job might be three to five
+                cleaners for seven to ten hours or more, finished with a final check before we hand it back to you.
               </p>
             </div>
 
@@ -193,10 +195,10 @@ export default async function HomePage() {
                 <BeforeAfter
                   before="/images/before-oven.jpg"
                   after="/images/after-oven.jpg"
-                  beforeAlt="An oven interior heavily coated in baked-on grease before cleaning"
-                  afterAlt="The same oven interior clean and clear after a restoration deep clean"
+                  beforeAlt="The outside wall of a white-clad house streaked with dirt, with cobwebs across the window and litter along the flower bed"
+                  afterAlt="The same wall and window clean, with the cobwebs and litter cleared"
                 />
-                <p className="mt-3 text-sm text-white/50">Drag the seam. Real job, Colchester.</p>
+                <p className="mt-3 text-sm text-white/50">Drag the seam to compare.</p>
               </>
             )}
           </div>

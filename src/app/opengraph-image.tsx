@@ -28,7 +28,7 @@ export default async function OpengraphImage() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           <div style={{ fontSize: 76, color: "#ffffff", lineHeight: 1.05, maxWidth: 900 }}>
-            Cleaned properly. Not just made to look clean.
+            Deep cleaning. Genuinely refreshed.
           </div>
           <div style={{ fontSize: 30, color: "rgba(234,223,199,0.82)", fontFamily: "system-ui, sans-serif" }}>
             Restoration deep cleaning across Essex and Suffolk

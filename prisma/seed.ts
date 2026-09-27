@@ -15,7 +15,7 @@ const AREAS = [
   { slug: "colchester", name: "Colchester", county: "Essex", priority: true, sortOrder: 10,
     blurb: "Our home patch. Colchester is the one area where we also take on selective regular domestic cleaning alongside the deep-clean work." },
   { slug: "ipswich", name: "Ipswich", county: "Suffolk", priority: true, sortOrder: 20,
-    blurb: "We work across Ipswich regularly, mostly on end-of-tenancy and after-builders jobs where the property has to be handed over spotless." },
+    blurb: "We work across Ipswich regularly, mostly on end-of-tenancy and after-builders jobs where the property has to be handed over properly finished, not just presentable." },
   { slug: "clacton-on-sea", name: "Clacton-on-Sea", county: "Essex", priority: true, sortOrder: 30,
     blurb: "Coastal properties, holiday lets and changeovers between tenants — all within our normal working area." },
   { slug: "braintree", name: "Braintree", county: "Essex", priority: true, sortOrder: 40,
@@ -42,14 +42,18 @@ const SERVICES: ServiceSeed[] = [
     featured: true,
     sortOrder: 10,
     summary:
-      "A labour-intensive, team-based clean for properties that need considerably more attention than a conventional deep clean.",
-    body: `Our signature restoration service is for people who want the property cleaned properly, not simply made to look clean from a distance.
+      "A labour-intensive, team-based clean that works through every room in detail and leaves the property genuinely refreshed and finished.",
+    body: `This is not a standard clean. It is for people who want a genuinely thorough, highly detailed finish, with every room properly worked through rather than given a quick surface clean.
 
-We allocate the team and the time according to the condition of the property rather than to a fixed hourly slot. We work methodically through the agreed areas, go back over stubborn details where they need it, and finish with a quality check before we hand the property back to you.
+We go well beyond the obvious areas. Skirting boards, radiators, switches, doors and frames are part of it, but most of the work is in the finer detailing: built-up residue, overlooked edges, corners, fittings, grease, and the kitchen and bathroom detail that gets missed whenever a clean is rushed. Where suitable, we use steam in key areas such as kitchens and bathrooms, both to lift stubborn grime and to sanitise the surfaces.
 
-Depending on the property, this can include intensive kitchen and bathroom cleaning; degreasing and descaling; doors, frames, handles and banisters; skirting boards; switches, sockets and high-touch points; internal windows, frames and sills; cupboard and drawer exteriors; detailed appliance cleaning where included; extractor hoods and filters; removal of cobwebs and built-up dust; vacuuming and floor cleaning; targeted steam cleaning and sanitising where suitable; and careful attention to the corners, edges and fittings most people never get to.
+We allocate the team and the time according to the condition of the property, not a fixed hourly slot. The team works methodically through the agreed areas, goes back over stubborn details until they are done, and finishes with a quality check before the property is handed back to you. The aim is a property that feels genuinely refreshed and finished, not superficially cleaned.
 
-The exact scope is agreed after we have seen photos, a short video or the property itself, so the team can concentrate on what your property genuinely needs. Larger or heavily soiled jobs may need three to five cleaners for seven to ten hours or more.`,
+On major cleans we dedicate the day to your property alone rather than fitting several jobs around it, so the team can work carefully and methodically without rushing. Mabel, who owns So Fresh, attends these cleans alongside the team.
+
+Depending on the property, the scope can include intensive kitchen and bathroom cleaning; degreasing and descaling; doors, frames, handles and banisters; skirting boards; switches, sockets and high-touch points; internal windows, frames and sills; cupboard and drawer exteriors; detailed appliance cleaning where included; extractor hoods and filters; removal of cobwebs and built-up dust; vacuuming and floor cleaning; targeted steam cleaning and sanitising where suitable; and the corners, edges and fittings most cleans never reach.
+
+The exact scope is agreed after we have seen photos, a short video or the property itself, so the time goes where your property genuinely needs it. Larger or heavily soiled jobs may need three to five cleaners for seven to ten hours or more.`,
     priceMode: "FROM",
     price: "350",
     negotiable: true,
@@ -68,8 +72,9 @@ The exact scope is agreed after we have seen photos, a short video or the proper
       "Internal windows, frames and sills where included",
       "Extractor hoods and filters",
       "Cobweb removal and built-up dust",
+      "Detailing of built-up residue, edges, corners and fittings",
       "Vacuuming and floor cleaning throughout",
-      "Targeted steam cleaning and sanitising where suitable",
+      "Steam cleaning where suitable, to lift stubborn grime and sanitise surfaces",
       "A final quality check before handover",
     ],
     excludes: [
@@ -92,15 +97,15 @@ The exact scope is agreed after we have seen photos, a short video or the proper
     ],
     faqs: [
       { q: "How is this different from a normal deep clean?",
-        a: "A conventional deep clean is usually priced by hours or bedrooms. This is priced by condition. We bring more people, allow more time, and go back over things until they are actually clean rather than until the clock runs out." },
+        a: "A conventional deep clean is usually priced by hours or bedrooms, and it tends to stop when the clock runs out. This is priced by condition. We bring more people, allow more time, and go back over the residue, edges and fittings until every agreed area has actually been worked through." },
       { q: "Why do you want photos before quoting?",
         a: "Because condition drives the workload far more than the number of bedrooms does. Two identical three-bedroom houses can be a five-hour job and a two-day job. Photos or a short walkthrough video let us give you a fixed price we can stand behind." },
       { q: "Is the price negotiable?",
-        a: "There is room to move on scope. If a fixed price is more than you want to spend, tell us your budget and we will tell you honestly what we can do properly within it — we would rather do fewer rooms well than every room badly." },
+        a: "There is room to move on scope, not on standard. If a fixed price is more than you want to spend, tell us the figure you had in mind and we will tell you honestly what we can do properly within it. We would rather do fewer rooms thoroughly than every room superficially." },
     ],
     seoTitle: "Restoration Deep Cleaning in Colchester & Essex",
     seoDescription:
-      "A labour-intensive deep clean for properties that need more than a standard clean. Fixed prices from £350 across Colchester, Ipswich and Essex.",
+      "A detail-led deep clean for properties that need properly working through, not a surface clean. Fixed prices from £350 across Colchester, Ipswich and Essex.",
   },
   {
     slug: "end-of-tenancy-cleaning",
@@ -108,10 +113,10 @@ The exact scope is agreed after we have seen photos, a short video or the proper
     group: "TRANSITION",
     propertyKind: "HOUSE",
     sortOrder: 20,
-    summary: "A thorough move-out clean for tenants, landlords and letting agents who need the property handed back properly.",
-    body: `Most deposit disputes come down to cleaning. This service exists to take that argument off the table.
+    summary: "A detailed move-out clean for tenants, landlords and letting agents who need the property handed back properly worked through.",
+    body: `Most deposit disputes come down to cleaning, and most of those come down to detail: grease on the extractor, residue around taps and seals, dust along the tops of doors. This service exists to take that argument off the table.
 
-We work through the whole property in the condition it is actually in: kitchens degreased and descaled, bathrooms taken back to clean rather than tidy, appliances, cupboards, skirtings, switches, doors and frames, internal windows and sills, and floors throughout.
+We work through the whole property in the condition it is actually in: kitchens degreased and descaled, bathrooms taken back to clean rather than tidy, appliances, cupboards, skirtings, switches, doors and frames, internal windows and sills, and floors throughout, including the edges, corners and fittings a rushed clean leaves behind.
 
 Because we price on condition rather than bedroom count, we ask for photos or a short walkthrough video first. That is also what lets us hold the price steady once we are on site.
 
@@ -240,9 +245,9 @@ The result is a property that photographs well and shows well — which matters 
     propertyKind: "HOUSE",
     sortOrder: 50,
     summary: "A full clean of your new home before your furniture arrives, so you start in a property that is genuinely yours.",
-    body: `Nobody wants to unpack into someone else's grime. A move-in clean is easiest and cheapest while the property is still empty, because we can reach everything.
+    body: `Nobody wants to unpack into someone else's grime. A move-in clean is most thorough, and costs less, while the property is still empty, because every cupboard, edge and corner can be reached.
 
-We clean inside cupboards and wardrobes, degrease and descale the kitchen, take the bathrooms back to properly clean, and go over skirtings, doors, frames, switches, internal glass and floors throughout.
+We clean inside cupboards and wardrobes, degrease and descale the kitchen, take the bathrooms back to properly clean, and work through skirtings, doors, frames, switches, fittings, internal glass and floors throughout.
 
 Book it for the day before the removals van if you possibly can — it makes a considerable difference to what we can reach.`,
     priceMode: "QUOTE_ONLY",
@@ -352,7 +357,7 @@ We would rather say no than promise a slot we cannot staff properly, so if we ca
 
 We take out the removable parts, degrease the interior including the door glass where it can be separated safely, clean the racks and trays, and rebuild it. Hobs, extractors and filters, fridges and freezers can be done at the same time.
 
-This can be booked on its own, or added to any other So Fresh clean while we are already there — which is almost always the cheaper way to do it.`,
+This can be booked on its own, or added to any other So Fresh clean while we are already there, which almost always works out as better value.`,
     priceMode: "QUOTE_ONLY",
     negotiable: false,
     durationEstimate: "One to three hours",
@@ -472,13 +477,13 @@ async function main() {
       heroSlides: [
         {
           image: "/images/hero-kitchen.jpg",
-          headline: "Cleaned properly.\nNot just made to look clean.",
-          sub: "Restoration deep cleaning across Essex and Suffolk.",
+          headline: "Deep cleaning.\nGenuinely refreshed.",
+          sub: "Detail-led restoration deep cleaning across Essex and Suffolk.",
         },
         {
           image: "/images/hero-bathroom.jpg",
           headline: "The places\nmost cleaners skip.",
-          sub: "Priced on condition, not on bedroom count.",
+          sub: "Built-up residue, edges, corners and fittings. Priced on condition, not on bedroom count.",
         },
         {
           image: "/images/hero-window.jpg",

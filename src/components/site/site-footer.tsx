@@ -46,7 +46,8 @@ export function SiteFooter({
         <div className="md:col-span-4">
           <Logo tone="light" />
           <p className="mt-5 max-w-xs text-[0.9375rem] leading-relaxed">
-            Detail-led cleaning for properties that need putting right. Based in Colchester, working across Essex and Suffolk.
+            Detail-led cleaning for properties that need properly working through. Based in Colchester, working across Essex and
+            Suffolk.
           </p>
 
           <div className="mt-7 space-y-3 text-[0.9375rem]">

@@ -92,7 +92,7 @@ export function SettingsForm({ initial, smtpConfigured, whatsappApiConfigured }:
               label="WhatsApp number"
               htmlFor="whatsapp"
               required
-              hint="International format without the plus, e.g. 447399505686."
+              hint="International format without the plus, e.g. 447935772485."
               error={state.fieldErrors?.whatsapp}
             >
               <Input id="whatsapp" name="whatsapp" defaultValue={initial.whatsapp} required />
@@ -188,7 +188,7 @@ export function SettingsForm({ initial, smtpConfigured, whatsappApiConfigured }:
               name="whatsappForwardNumber"
               defaultValue={initial.whatsappForwardNumber ?? ""}
               required={forwarding}
-              placeholder="447399505686"
+              placeholder="447935772485"
             />
           </Field>
           <Field label="Send booking emails to" htmlFor="adminNotifyEmail" required error={state.fieldErrors?.adminNotifyEmail}>

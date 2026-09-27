@@ -473,7 +473,7 @@ async function main() {
     create: {
       id: "singleton",
       serviceAreas: AREAS.map((a) => a.name),
-      whatsappForwardNumber: "447399505686",
+      whatsappForwardNumber: "447935772485",
       adminNotifyEmail: process.env.SEED_ADMIN_EMAIL ?? "info@sofreshcleaning.co.uk",
       heroSlides: [
         {

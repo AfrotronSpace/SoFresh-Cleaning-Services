@@ -1,10 +1,13 @@
 # Notes for Mabel — things that need a decision
 
-## 1. Which phone number is right?
+## 1. Which phone number is right? — resolved 2026-09-27
 
-The first form gave **07935 772485** as the main line. The revision gave **07386 528399**.
-The site currently uses **07386 528399** for calls and **07399 505686** for WhatsApp, which
-matches the later form. If that's wrong, change it in Admin → Settings — no code needed.
+**07935 772485** is the single number for both calls and WhatsApp. It replaces
+07386 528399 (calls) and 07399 505686 (WhatsApp) from the revised form. The site
+defaults, the seed and a database migration (`20260927210000_single_contact_number`)
+all use it. If it ever changes again, update Admin → Settings **and** `SITE` in
+`src/lib/constants.ts` — some pages still print the number from there
+(`docs/FINDINGS.md` #8).
 
 ## 2. The 15-hour window
 

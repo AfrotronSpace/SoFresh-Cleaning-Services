@@ -520,8 +520,8 @@ model SiteSetting {
   companyNumber String @default("16423190")
   tagline      String @default("Premium, detail-led cleaning across Essex and Suffolk")
 
-  phone     String @default("07386 528399")
-  whatsapp  String @default("447399505686")
+  phone     String @default("07935 772485")
+  whatsapp  String @default("447935772485")
   email     String @default("info@sofreshcleaning.co.uk")
 
   /// Public-facing only. The registered office is deliberately not published.

@@ -227,7 +227,7 @@ Six places render `SITE.whatsappDisplay` / `SITE.phone` / `SITE.email` from
 the hardcoded `constants.ts` object while the adjacent `href` uses
 `settings.*`:
 
-- `src/app/(site)/page.tsx:289` — "Message 07399 505686" button
+- `src/app/(site)/page.tsx:289` — "Message 07935 772485" button
 - `src/app/(site)/contact/page.tsx:57`
 - `src/app/(site)/booking-received/[reference]/page.tsx:112`
 - `src/components/site/site-footer.tsx:54`
@@ -235,11 +235,10 @@ the hardcoded `constants.ts` object while the adjacent `href` uses
   (customer emails)
 - `src/lib/email.ts:119` (footer of every email)
 
-`SETUP-NOTES.md` §1 tells the client the phone-number ambiguity is fixable in
-Admin → Settings "no code needed". That is only half true: the link updates,
-the visible number does not. Given the two forms disagree about the main line
-(AFT-F-01 gave 07935 772485, the revision gave 07386 528399), this will
-actually happen.
+Changing a number in Admin → Settings alone is therefore only half a fix: the
+link updates, the visible number does not. This has already happened once: on
+2026-09-27 both numbers moved to 07935 772485, and `constants.ts` had to be
+edited by hand alongside a data migration.
 
 **Fix:** derive the display string from `settings.whatsapp` with a small
 `formatUkNumber()` helper, and pass `settings` into `emailShell()`.

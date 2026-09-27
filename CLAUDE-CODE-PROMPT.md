@@ -22,7 +22,7 @@ stay light.
 - **So Fresh Cleaning Service Ltd**, trading as So Fresh Cleaning Service. Companies House
   **16423190**. Started trading **2025**. Registered in England & Wales.
 - Domain `sofreshcleaning.co.uk`, email `info@sofreshcleaning.co.uk`.
-- Phone **07386 528399**. WhatsApp **07399 505686** (`447399505686` in international form).
+- Phone and WhatsApp are the same number: **07935 772485** (`447935772485` in international form).
 - Areas: **Colchester** (base), Ipswich, Dedham, Clacton-on-Sea, Braintree, Brentwood,
   Frinton-on-Sea. Growth priorities: Colchester, Ipswich, Clacton-on-Sea, Braintree.
 - The registered office is a home address. **Never publish it.** Show service areas only.

@@ -33,8 +33,8 @@ offers a postal address "on request" rather than printing one.
 
 | Fact | Value | Source | Note |
 |---|---|---|---|
-| Main phone | 07386 528399 | E1 (revised) | The original form said 07935 772485. **Unresolved** — see `SETUP-NOTES.md` §1 |
-| WhatsApp | 07399 505686 / +44 7399 505686 | E2 (revised) | Stored as `447399505686` |
+| Main phone | 07935 772485 | E1 (original form), confirmed 2026-09-27 | One number for calls **and** WhatsApp. Replaces 07386 528399 (E1 revised) |
+| WhatsApp | 07935 772485 / +44 7935 772485 | Confirmed 2026-09-27 | Same number as the phone. Stored as `447935772485`. Replaces 07399 505686 (E2 revised) |
 | Email | info@sofreshcleaning.co.uk | E3, G1 | No CC recipient at present (G1) |
 | Preferred first contact | **WhatsApp**, then phone, then the form | E5 | This is why the WhatsApp button is the primary CTA everywhere and the mobile sticky bar exists |
 | Domain | sofreshcleaning.co.uk (owned, registrar TBC) | I1 | |

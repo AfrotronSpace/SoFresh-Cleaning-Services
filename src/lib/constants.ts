@@ -6,9 +6,9 @@ export const SITE = {
   companyNumber: "16423190",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://sofreshcleaning.co.uk",
   email: "info@sofreshcleaning.co.uk",
-  phone: "07386 528399",
-  whatsapp: "447399505686",
-  whatsappDisplay: "07399 505686",
+  phone: "07935 772485",
+  whatsapp: "447935772485",
+  whatsappDisplay: "07935 772485",
   founded: 2025,
   tagline: "Premium, detail-led cleaning across Essex and Suffolk",
 } as const;

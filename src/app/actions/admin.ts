@@ -14,6 +14,8 @@ import {
   inboxUploadSchema,
   inboxIdsSchema,
   inboxReturnSchema,
+  adminReviewSchema,
+  PLACEHOLDER_REVIEW_PREFIX,
 } from "@/lib/validations";
 import { MAX_FRAMES_PER_JOB, displayNameFromKey } from "@/lib/gallery";
 import { sendEmail, emailShell } from "@/lib/email";
@@ -474,6 +476,82 @@ export async function deleteInboxItemsAction(input: unknown): Promise<InboxResul
   return { ok: true, count: items.length };
 }
 
+// ---------------------------------------------------------------- reviews
+
+function revalidateReviews() {
+  revalidatePath("/");
+  revalidatePath("/reviews");
+  revalidatePath("/gallery");
+  revalidatePath("/admin/reviews");
+}
+
+export async function saveReviewAction(_prev: ActionState, formData: FormData): Promise<ActionState & { id?: string }> {
+  await requireAdmin();
+
+  const id = String(formData.get("id") ?? "");
+  const parsed = adminReviewSchema.safeParse({
+    authorName: String(formData.get("authorName") ?? ""),
+    area: String(formData.get("area") ?? ""),
+    rating: String(formData.get("rating") ?? ""),
+    body: String(formData.get("body") ?? ""),
+    source: String(formData.get("source") ?? "GOOGLE"),
+    status: String(formData.get("status") ?? "PENDING"),
+    jobId: String(formData.get("jobId") ?? ""),
+    featured: formData.get("featured") === "on",
+    sortOrder: Number(formData.get("sortOrder") ?? 100),
+  });
+
+  if (!parsed.success) return { error: "Please check the highlighted fields.", fieldErrors: collect(parsed.error.issues) };
+  const d = parsed.data;
+
+  if (d.jobId) {
+    const exists = await prisma.galleryJob.findUnique({ where: { id: d.jobId }, select: { id: true } });
+    if (!exists) return { error: "That gallery job no longer exists.", fieldErrors: { jobId: "Pick another job" } };
+  }
+
+  const data = { ...d, area: d.area || null, jobId: d.jobId || null };
+
+  let savedId = id;
+  if (id) {
+    try {
+      await prisma.testimonial.update({ where: { id }, data });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+        return { error: "That review no longer exists." };
+      }
+      throw error;
+    }
+  } else {
+    savedId = (await prisma.testimonial.create({ data, select: { id: true } })).id;
+  }
+
+  revalidateReviews();
+  const status = d.status === "APPROVED" ? "It's live on the website." : "It isn't on the website.";
+  return { ok: true, id: savedId, message: `${id ? "Review updated" : "Review added"}. ${status}` };
+}
+
+export async function setReviewStatusAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const status = String(formData.get("status") ?? "");
+  if (!id || (status !== "APPROVED" && status !== "HIDDEN" && status !== "PENDING")) return;
+  await prisma.testimonial.updateMany({
+    // Same guard as the edit form: a seeded placeholder can never go live.
+    where: { id, ...(status === "APPROVED" ? { NOT: { body: { startsWith: PLACEHOLDER_REVIEW_PREFIX } } } : {}) },
+    data: { status },
+  });
+  revalidateReviews();
+}
+
+export async function deleteReviewAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  await prisma.testimonial.delete({ where: { id } }).catch(() => null);
+  revalidateReviews();
+  redirect("/admin/reviews");
+}
+
 // ---------------------------------------------------------------- bookings
 
 export async function updateBookingAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -640,6 +718,7 @@ export async function saveSettingsAction(_prev: ActionState, formData: FormData)
     whatsappForwardNumber: String(formData.get("whatsappForwardNumber") ?? ""),
     adminNotifyEmail: String(formData.get("adminNotifyEmail") ?? ""),
     adminNotifyCc: String(formData.get("adminNotifyCc") ?? ""),
+    emailReviewToAdmin: formData.get("emailReviewToAdmin") === "on",
     announcementText: String(formData.get("announcementText") ?? ""),
     announcementActive: formData.get("announcementActive") === "on",
     googleReviewUrl: String(formData.get("googleReviewUrl") ?? ""),

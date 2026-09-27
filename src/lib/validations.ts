@@ -185,6 +185,7 @@ export const settingsSchema = z.object({
   whatsappForwardNumber: z.string().max(30).optional().or(z.literal("")),
   adminNotifyEmail: z.string().trim().toLowerCase().email(),
   adminNotifyCc: z.string().max(160).optional().or(z.literal("")),
+  emailReviewToAdmin: z.boolean(),
   announcementText: z.string().max(200).optional().or(z.literal("")),
   announcementActive: z.boolean(),
   googleReviewUrl: z.string().max(400).optional().or(z.literal("")),
@@ -252,6 +253,53 @@ export const galleryJobSchema = z
   .refine((job) => !job.published || job.media.length > 0, {
     message: "Add at least one photo or video before putting this on the website",
     path: ["media"],
+  });
+
+// Rule 1 extends to customers: a town, never a street, number or postcode.
+const townOnly = z
+  .string()
+  .trim()
+  .max(80)
+  .regex(/^[^0-9]*$/, "Town or area only — no house numbers or postcodes")
+  .optional()
+  .or(z.literal(""));
+
+const rating = z.coerce
+  .number({ invalid_type_error: "Pick a star rating" })
+  .int()
+  .min(1, "Pick a star rating")
+  .max(5, "Pick a star rating");
+
+/** What a customer sends from /reviews, the homepage or a gallery job. */
+export const reviewSubmissionSchema = z.object({
+  rating,
+  body: z.string().trim().min(10, "Tell us a little more about the job").max(2000),
+  name: z.string().trim().min(2, "Enter your name").max(80),
+  email: z.string().trim().toLowerCase().email("Enter the email you booked with"),
+  area: townOnly,
+  jobId: z.string().max(40).optional().or(z.literal("")),
+  consent: z.literal(true, { errorMap: () => ({ message: "Tick this so we can show your review" }) }),
+  // Honeypot: checked after parsing so a bot gets a normal "ok", not a hint.
+  company: z.string().max(200).optional(),
+});
+
+export const PLACEHOLDER_REVIEW_PREFIX = "[Paste this customer";
+
+export const adminReviewSchema = z
+  .object({
+    authorName: z.string().trim().min(2, "Enter a name").max(80),
+    area: townOnly,
+    rating,
+    body: z.string().trim().min(10, "Paste in the review text").max(4000),
+    source: z.enum(["GOOGLE", "WEBSITE"]),
+    status: z.enum(["PENDING", "APPROVED", "HIDDEN"]),
+    jobId: z.string().max(40).optional().or(z.literal("")),
+    featured: z.boolean().default(false),
+    sortOrder: z.number().int().min(0).max(9999).default(100),
+  })
+  .refine((r) => r.status !== "APPROVED" || !r.body.startsWith(PLACEHOLDER_REVIEW_PREFIX), {
+    message: "Replace the placeholder with the customer's real review before putting it live",
+    path: ["body"],
   });
 
 export const messageSchema = z.object({

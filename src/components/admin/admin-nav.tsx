@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CalendarCheck, Sparkles, Images, Users, Inbox, Send, Settings } from "lucide-react";
+import { LayoutDashboard, CalendarCheck, Sparkles, Images, Star, Users, Inbox, Send, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/admin/bookings", label: "Bookings", Icon: CalendarCheck },
   { href: "/admin/services", label: "Services", Icon: Sparkles },
   { href: "/admin/gallery", label: "Gallery", Icon: Images },
+  { href: "/admin/reviews", label: "Reviews", Icon: Star },
   { href: "/admin/customers", label: "Customers", Icon: Users },
   { href: "/admin/enquiries", label: "Enquiries", Icon: Inbox },
   { href: "/admin/messages", label: "Messages", Icon: Send },

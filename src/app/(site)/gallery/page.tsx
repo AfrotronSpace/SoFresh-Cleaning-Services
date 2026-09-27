@@ -5,6 +5,7 @@ import { StickyContactBar } from "@/components/site/sticky-contact-bar";
 import { JsonLd } from "@/components/site/json-ld";
 import { Button } from "@/components/ui/button";
 import { loadSettings } from "@/lib/settings";
+import { getSession } from "@/lib/auth";
 import { getGalleryServiceFilters, getPublishedJob, getPublishedJobs } from "@/lib/gallery-data";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { cn, whatsappLink } from "@/lib/utils";
@@ -32,11 +33,12 @@ export default async function GalleryPage({ searchParams }: Search) {
   const { service, page: rawPage, job: jobId } = await searchParams;
   const page = Math.max(1, Number.parseInt(rawPage ?? "1", 10) || 1);
 
-  const [settings, filters, result, linkedJob] = await Promise.all([
+  const [settings, filters, result, linkedJob, session] = await Promise.all([
     loadSettings(),
     getGalleryServiceFilters(),
     getPublishedJobs({ serviceSlug: service, page }),
     jobId ? getPublishedJob(jobId) : Promise.resolve(null),
+    getSession(),
   ]);
 
   const activeService = filters.find((f) => f.slug === service);
@@ -93,7 +95,13 @@ export default async function GalleryPage({ searchParams }: Search) {
         )}
 
         {result.jobs.length > 0 ? (
-          <GalleryGrid jobs={result.jobs} linkedJob={linkedJob} whatsapp={settings.whatsapp} />
+          <GalleryGrid
+            jobs={result.jobs}
+            linkedJob={linkedJob}
+            whatsapp={settings.whatsapp}
+            reviewDefaults={session ? { name: session.name, email: session.email } : null}
+            areas={settings.serviceAreas}
+          />
         ) : (
           <div className="rounded-2xl bg-mist p-8 md:p-10">
             <h2 className="font-display text-2xl leading-tight">

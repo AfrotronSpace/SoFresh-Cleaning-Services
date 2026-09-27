@@ -36,6 +36,7 @@ const FALLBACK = {
   whatsappForwardNumber: null as string | null,
   adminNotifyEmail: SITE.email,
   adminNotifyCc: null as string | null,
+  emailReviewToAdmin: true,
   announcementText: null as string | null,
   announcementActive: false,
   heroSlides: null as unknown,

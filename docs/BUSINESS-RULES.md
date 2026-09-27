@@ -137,8 +137,15 @@ should be **first name + initial** unless full-name permission is confirmed.
 
 The seed uses six of those names with bracketed placeholder body text, because
 inventing review wording and attributing it to a named real person is not
-shippable. See finding #4 — nothing currently stops the placeholders reaching
-production.
+shippable. They are seeded as `PENDING` and cannot be approved while the
+placeholder text is still there (finding #4, resolved).
+
+Customers can also leave reviews on the site. Those follow the same rules:
+the name they type is stored as first name + initial, the town field rejects
+house numbers and postcodes (rule 1), and nothing is public until the admin
+approves it. The only promise the site makes about moderation is that every
+review is read before it goes up — no turnaround time is stated, because the
+forms don't give one.
 
 ## SEO vocabulary — the client's customers' words, not industry terms
 

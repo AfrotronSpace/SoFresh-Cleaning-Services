@@ -10,6 +10,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { prisma } from "@/lib/prisma";
 import { loadSettings } from "@/lib/settings";
 import { getShowcasePair } from "@/lib/gallery-data";
+import { getApprovedReviews } from "@/lib/review-data";
+import { getSession } from "@/lib/auth";
 import { ALL_FAQS, HOW_IT_WORKS } from "@/lib/content";
 import { faqJsonLd } from "@/lib/seo";
 import { whatsappLink } from "@/lib/utils";
@@ -17,32 +19,28 @@ import { SITE } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
-async function getHomeData() {
-  try {
-    const [services, testimonials] = await Promise.all([
-      prisma.service.findMany({
-        where: { active: true },
-        orderBy: [{ featured: "desc" }, { sortOrder: "asc" }],
-        take: 7,
-        select: {
-          slug: true, name: true, summary: true, price: true, priceMode: true,
-          negotiable: true, requiresSurvey: true, heroImage: true, featured: true,
-        },
-      }),
-      prisma.testimonial.findMany({
-        where: { active: true },
-        orderBy: [{ featured: "desc" }, { sortOrder: "asc" }],
-        take: 6,
-      }),
-    ]);
-    return { services, testimonials };
-  } catch {
-    return { services: [], testimonials: [] };
-  }
+async function getServices() {
+  return prisma.service
+    .findMany({
+      where: { active: true },
+      orderBy: [{ featured: "desc" }, { sortOrder: "asc" }],
+      take: 7,
+      select: {
+        slug: true, name: true, summary: true, price: true, priceMode: true,
+        negotiable: true, requiresSurvey: true, heroImage: true, featured: true,
+      },
+    })
+    .catch(() => []);
 }
 
 export default async function HomePage() {
-  const [settings, { services, testimonials }, showcase] = await Promise.all([loadSettings(), getHomeData(), getShowcasePair("restoration-deep-clean")]);
+  const [settings, services, reviews, showcase, session] = await Promise.all([
+    loadSettings(),
+    getServices(),
+    getApprovedReviews({ take: 6 }),
+    getShowcasePair("restoration-deep-clean"),
+    getSession(),
+  ]);
 
   const slides = (settings.heroSlides as HeroSlide[] | null)?.length
     ? (settings.heroSlides as HeroSlide[])
@@ -230,8 +228,11 @@ export default async function HomePage() {
       </section>
 
       <Reviews
-        reviews={testimonials.map((t) => ({ authorName: t.authorName, area: t.area, body: t.body, rating: t.rating }))}
+        reviews={reviews.reviews}
+        total={reviews.total}
         googleUrl={settings.googleReviewUrl}
+        defaults={session ? { name: session.name, email: session.email } : null}
+        areas={settings.serviceAreas}
       />
 
       {/* Areas */}

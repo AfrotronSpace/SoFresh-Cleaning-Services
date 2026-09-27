@@ -18,7 +18,7 @@ export type SettingsValues = {
   bookingFeeNote: string; cancellationHours: number; reclaimWindowHours: number;
   emailBookingToAdmin: boolean; emailBookingToCustomer: boolean;
   forwardBookingsToWhatsapp: boolean; whatsappForwardNumber: string | null;
-  adminNotifyEmail: string; adminNotifyCc: string | null;
+  adminNotifyEmail: string; adminNotifyCc: string | null; emailReviewToAdmin: boolean;
   announcementText: string | null; announcementActive: boolean;
   googleReviewUrl: string | null; facebookUrl: string | null;
   instagramUrl: string | null; tiktokUrl: string | null;
@@ -167,6 +167,12 @@ export function SettingsForm({ initial, smtpConfigured, whatsappApiConfigured }:
                 : "The WhatsApp Cloud API isn't connected, so each booking will give you a one-tap link in the dashboard instead of sending by itself."
             }
             onChange={setForwarding}
+          />
+          <SwitchRow
+            name="emailReviewToAdmin"
+            defaultChecked={initial.emailReviewToAdmin}
+            label="Email you every new customer review"
+            hint="Reviews left on the website wait under Reviews until you approve them, whether or not this is on."
           />
         </div>
 

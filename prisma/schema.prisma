@@ -160,6 +160,7 @@ model User {
   bookings     Booking[]
   messages     MessageLog[] @relation("MessageRecipient")
   sentMessages MessageLog[] @relation("MessageSender")
+  reviews      Testimonial[]
 
   @@index([role])
   @@index([createdAt])
@@ -286,7 +287,8 @@ model GalleryJob {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  media GalleryMedia[]
+  media   GalleryMedia[]
+  reviews Testimonial[]
 
   @@index([published, featured, completedOn])
   @@index([serviceId])
@@ -539,6 +541,7 @@ model SiteSetting {
   whatsappForwardNumber  String?
   adminNotifyEmail       String  @default("info@sofreshcleaning.co.uk")
   adminNotifyCc          String?
+  emailReviewToAdmin     Boolean @default(true)
 
   announcementText   String?
   announcementActive Boolean @default(false)
@@ -554,19 +557,46 @@ model SiteSetting {
   updatedAt DateTime @updatedAt
 }
 
-model Testimonial {
-  id         String  @id @default(cuid())
-  authorName String // stored as "Nicola R." — first name + initial by default
-  area       String?
-  rating     Int     @default(5)
-  body       String
-  source     String  @default("Google")
-  featured   Boolean @default(false)
-  active     Boolean @default(true)
-  sortOrder  Int     @default(100)
-  createdAt  DateTime @default(now())
+/// PENDING is the moderation queue: customer submissions land there and never
+/// reach the public site until an admin approves them.
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  HIDDEN
+}
 
-  @@index([active, sortOrder])
+enum ReviewSource {
+  GOOGLE // pasted in by the admin from the Google Business Profile
+  WEBSITE // submitted by a customer on this site
+}
+
+/// A customer review. Named Testimonial for history; the UI calls it a review.
+model Testimonial {
+  id         String       @id @default(cuid())
+  authorName String // stored as "Nicola R." — first name + initial by default
+  /// Town only, like GalleryJob.area — never a street or postcode.
+  area       String?
+  rating     Int          @default(5)
+  body       String
+  source     ReviewSource @default(GOOGLE)
+  status     ReviewStatus @default(PENDING)
+  featured   Boolean      @default(false)
+  sortOrder  Int          @default(100)
+
+  /// The completed job being reviewed, when there is one.
+  jobId String?
+  job   GalleryJob? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
+  /// Private: lets the admin check a website review came from a real customer. Never rendered publicly.
+  email  String?
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, featured, sortOrder])
+  @@index([jobId])
 }
 
 model AreaCovered {

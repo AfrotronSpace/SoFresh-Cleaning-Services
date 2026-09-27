@@ -450,7 +450,8 @@ If you are outside Colchester, or if what you need is a weekly two-hour tidy at 
 /**
  * Review text is deliberately NOT invented here. The business has real
  * five-star Google reviews from these customers; paste the genuine wording in
- * from the Google Business Profile before the site goes live.
+ * from the Google Business Profile (Admin → Reviews), then approve each one.
+ * They are seeded PENDING so a placeholder can never reach the public site.
  */
 const TESTIMONIAL_AUTHORS = [
   { authorName: "Nicola R.", area: "Colchester", featured: true, sortOrder: 10 },
@@ -462,7 +463,7 @@ const TESTIMONIAL_AUTHORS = [
 ];
 
 const PLACEHOLDER_REVIEW =
-  "[Paste this customer's real Google review text here before launch — see Admin → Settings for the review link.]";
+  "[Paste this customer's real Google review text here, then approve it — see Admin → Reviews.]";
 
 async function main() {
   // ---------------------------------------------------------------- settings
@@ -534,9 +535,9 @@ async function main() {
   const existingTestimonials = await prisma.testimonial.count();
   if (existingTestimonials === 0) {
     await prisma.testimonial.createMany({
-      data: TESTIMONIAL_AUTHORS.map((author) => ({ ...author, body: PLACEHOLDER_REVIEW, source: "Google" })),
+      data: TESTIMONIAL_AUTHORS.map((author) => ({ ...author, body: PLACEHOLDER_REVIEW, source: "GOOGLE", status: "PENDING" })),
     });
-    console.log("  testimonials created with placeholder text — replace before launch.");
+    console.log("  reviews created with placeholder text, awaiting approval — paste the real text in Admin → Reviews.");
   }
 
   console.log(`  ${SERVICES.length} services, ${AREAS.length} areas.`);

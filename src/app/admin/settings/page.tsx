@@ -39,6 +39,7 @@ export default async function AdminSettingsPage() {
           whatsappForwardNumber: settings.whatsappForwardNumber,
           adminNotifyEmail: settings.adminNotifyEmail,
           adminNotifyCc: settings.adminNotifyCc,
+          emailReviewToAdmin: settings.emailReviewToAdmin,
           announcementText: settings.announcementText,
           announcementActive: settings.announcementActive,
           googleReviewUrl: settings.googleReviewUrl,

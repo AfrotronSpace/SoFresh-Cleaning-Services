@@ -134,11 +134,13 @@ src/lib/r2.ts               R2 presigned uploads/downloads. Public bucket is use
                             (customer booking) bucket is not wired to any UI yet.
 src/lib/gallery.ts          Browser-safe gallery types, limits and key format.
 src/lib/gallery-data.ts     Gallery queries + row → render-ready object mapping.
+src/lib/reviews.ts          Browser-safe review types, labels, publicName().
+src/lib/review-data.ts      Review queries. Only APPROVED rows are ever public.
 src/app/(site)/             Public pages.
 src/app/(auth)/             Sign in / sign up.
 src/app/dashboard/          Customer's own bookings.
-src/app/admin/              Business dashboard (8 sections, incl. Gallery).
-src/app/api/                Two POST routes (bookings, contact) plus /api/health
+src/app/admin/              Business dashboard (9 sections, incl. Gallery and Reviews).
+src/app/api/                Three POST routes (bookings, contact, reviews) plus /api/health
                             for Railway's health check.
 src/app/actions/            Server actions: auth.ts and admin.ts.
 src/components/booking/     The six-step booking wizard (867 lines, the big one).
@@ -157,5 +159,5 @@ railway.json                Build/deploy config: Dockerfile builder, migrate
 ## Before you touch anything
 
 `docs/FINDINGS.md` has 27 open items ranked by severity, each with a file and
-line reference and a suggested fix. Four of them are launch blockers. If you
+line reference and a suggested fix. The S1 section lists the launch blockers. If you
 are picking up work, start there rather than reading the codebase cold.

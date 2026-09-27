@@ -13,7 +13,8 @@ migrated in this working tree.
 |---|---|
 | `/` | Hero carousel, trust strip, catalogue, restoration showcase with before/after seam, process, reviews, areas, FAQ, CTA |
 | `/services` · `/services/[slug]` | Catalogue grouped into the client's three headings; detail pages carry includes/excludes, FAQs, JSON-LD, up to four "Recent jobs" from the gallery, and an inline booking wizard |
-| `/gallery` | Completed jobs ("Our work"). Filter chips per service, 24 per page, a viewer dialog with before/after sliders and click-to-play video. `?job=<id>` deep-links straight into a job. The homepage showcase uses the newest *featured* before/after photo pair (restoration first), falling back to the placeholder oven |
+| `/reviews` | Approved reviews (Google and website), average rating, 24 per page, and a leave-a-review form. `?job=<id>` attaches the review to that gallery job |
+| `/gallery` | Completed jobs ("Our work"). Filter chips per service, 24 per page, a viewer dialog with before/after sliders and click-to-play video. `?job=<id>` deep-links straight into a job. Each job's dialog shows its approved reviews and a *Review this job* form The homepage showcase uses the newest *featured* before/after photo pair (restoration first), falling back to the placeholder oven |
 | `/areas` · `/areas/[slug]` | Seven seeded areas; the detail page falls back to `SiteSetting.serviceAreas` for anything not in `AreaCovered` |
 | `/book` | Six-step wizard, `?service=slug` preselects, prefills from the signed-in user |
 | `/booking-received/[reference]` | Confirmation with reference, next steps, WhatsApp photo prompt |
@@ -23,12 +24,12 @@ migrated in this working tree.
 | `/sign-in` · `/sign-up` | JWT session, 30-day httpOnly cookie |
 | `/dashboard` | Customer's own bookings with status, quote and recent events |
 
-### Admin dashboard — 8 sections
+### Admin dashboard — 9 sections
 Overview (counts, pipeline value, config warnings), Bookings (list + detail
 with status/quote editor, event trail, WhatsApp forward), Services (full CRUD
 over every catalogue field, including a header-image and gallery uploader
 that presigns straight to R2's public bucket — see `docs/DEPLOYMENT.md` —
-plus per-service FAQs, keyword tags and an icon), Gallery (see below), Customers, Enquiries,
+plus per-service FAQs, keyword tags and an icon), Gallery (see below), Reviews (see below), Customers, Enquiries,
 Messages (every email and WhatsApp attempt, including skipped ones), Settings.
 
 **Gallery (added 26 Sep 2026).** A `GalleryJob` (title, description, date,
@@ -54,6 +55,20 @@ happen for keys that no job or inbox row still references. Verified end
 to end against a local Postgres and a stand-in bucket; **not yet tried
 against real R2**, which needs the public bucket from `docs/DEPLOYMENT.md`.
 
+**Reviews (added 27 Sep 2026).** One `Testimonial` table holds both kinds:
+reviews the admin copies in from the Google Business Profile, and reviews
+customers leave on the website (`/reviews`, the homepage *Leave a review*
+dialog, or *Review this job* inside a gallery job). Website reviews always
+arrive `PENDING` and appear nowhere until approved in Admin → Reviews, which
+opens on the waiting queue and offers one-click approve/hide. The edit page
+shows the submitter's private email and any bookings under it, so the admin
+can check the reviewer is a real customer. Names are stored as first name +
+initial (G1); towns reject digits, like gallery areas (rule 1). A review can
+be linked to a gallery job and then shows inside that job. The admin gets an
+email per new review, switchable in Settings (`emailReviewToAdmin`); with no
+SMTP it degrades to a `SKIPPED` log like everything else. The Overview shows
+a banner while anything is waiting.
+
 ### Platform
 - 15 Prisma models, no payment or card model anywhere by design
 - Zod validation shared by API routes and server actions
@@ -69,9 +84,9 @@ against real R2**, which needs the public bucket from `docs/DEPLOYMENT.md`.
 ## Left to build
 
 ### Blocking launch
-1. **Fix the four S1 defects** in `docs/FINDINGS.md` — broken seed, 404 OG
-   images, the literal `&rsquo;` on six service pages, placeholder reviews
-   presented as genuine.
+1. **Fix the remaining S1 defects** in `docs/FINDINGS.md` — 404 OG images and
+   the literal `&rsquo;` on six service pages. (The broken seed and the
+   placeholder reviews are resolved.)
 2. **Real photography.** Everything in `public/images/` is a generated
    placeholder with the word PLACEHOLDER printed on it. The client has sent
    200+ photos and videos (via WhatsApp, unsorted) and confirmed customer
@@ -81,7 +96,8 @@ against real R2**, which needs the public bucket from `docs/DEPLOYMENT.md`.
    faces, house numbers, post, or a business client's logo (G3). Service hero
    images and the hero carousel are still placeholders.
 3. **Real review text.** Six Google reviews, attributed as first name +
-   initial per AFT-F-01 G1.
+   initial per AFT-F-01 G1. They're seeded as *waiting* placeholders in
+   Admin → Reviews; paste each one in and approve it. Nothing shows until then.
 4. **Legal sign-off.** `SETUP-NOTES.md` §4 — the cancellation and booking-fee
    clauses have money attached and should be read by a solicitor.
 5. **Decide the two open questions** in `SETUP-NOTES.md`: which phone number is

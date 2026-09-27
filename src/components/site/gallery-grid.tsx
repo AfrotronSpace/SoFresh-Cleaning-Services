@@ -5,6 +5,8 @@ import { useCallback, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { BeforeAfter } from "@/components/site/before-after";
 import { JobCover, jobCounts, jobMeta } from "@/components/site/job-cover";
+import { ReviewCard } from "@/components/site/reviews";
+import { ReviewForm, type ReviewFormDefaults } from "@/components/site/review-form";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import type { PublicFrame, PublicJob, PublicSlot } from "@/lib/gallery";
@@ -103,14 +105,20 @@ export function GalleryGrid({
   jobs: gridJobs,
   linkedJob,
   whatsapp,
+  reviewDefaults,
+  areas,
 }: {
   jobs: PublicJob[];
   /** Opened on arrival from a ?job= link. May be from another page of results. */
   linkedJob?: PublicJob | null;
   whatsapp: string;
+  reviewDefaults?: ReviewFormDefaults | null;
+  areas?: string[];
 }) {
   const jobs = linkedJob && !gridJobs.some((j) => j.id === linkedJob.id) ? [...gridJobs, linkedJob] : gridJobs;
   const [openId, setOpenId] = useState<string | null>(linkedJob?.id ?? null);
+  // Tied to a job id so paging to the next job closes a half-written review.
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
   const index = jobs.findIndex((j) => j.id === openId);
   const job = index >= 0 ? jobs[index] : null;
 
@@ -162,6 +170,28 @@ export function GalleryGrid({
                 <Frame key={frame.id} frame={frame} />
               ))}
             </div>
+
+            <section aria-labelledby="job-reviews-heading" className="border-t border-border px-6 py-6 md:px-8">
+              <h3 id="job-reviews-heading" className="font-display text-xl">
+                {job.reviews.length ? "What the customer said" : "Was this your job?"}
+              </h3>
+              {job.reviews.length > 0 && (
+                <ul className="mt-4 grid gap-4 sm:grid-cols-2">
+                  {job.reviews.map((review) => (
+                    <ReviewCard key={review.id} review={review} />
+                  ))}
+                </ul>
+              )}
+              {reviewingId === job.id ? (
+                <div className="mt-5">
+                  <ReviewForm key={job.id} job={{ id: job.id, title: job.title }} defaults={reviewDefaults} areas={areas} />
+                </div>
+              ) : (
+                <Button variant="outline" size="sm" className="mt-4" onClick={() => setReviewingId(job.id)}>
+                  Review this job
+                </Button>
+              )}
+            </section>
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-haze/60 px-6 py-4 md:px-8">
               <div className="flex gap-1">

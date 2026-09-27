@@ -3,6 +3,8 @@
  * route and the server. No SDK imports here, so client components can use it.
  */
 
+import type { PublicReview } from "@/lib/reviews";
+
 export const GALLERY_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 export const GALLERY_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"] as const;
 export const GALLERY_ACCEPT = [...GALLERY_IMAGE_TYPES, ...GALLERY_VIDEO_TYPES].join(",");
@@ -56,6 +58,8 @@ export type PublicJob = {
   area: string | null;
   service: { slug: string; name: string } | null;
   frames: PublicFrame[];
+  /** Approved reviews of this job. */
+  reviews: Omit<PublicReview, "job">[];
 };
 
 /** A slot as the admin editor holds it: the key is what's saved, the URLs are for previews. */

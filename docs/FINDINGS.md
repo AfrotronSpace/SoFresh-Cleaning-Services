@@ -98,7 +98,21 @@ service** (AFT-F-01 C2).
 **Fix:** `"Priced once we've seen photos"` — a plain apostrophe. The entity is
 only needed in JSX text nodes, and even there only to satisfy a lint rule.
 
-### 4. Six fake-looking reviews ship on the homepage with real customers' names
+### 4. ~~Six fake-looking reviews ship on the homepage with real customers' names~~ — resolved 27 Sep 2026 **[verified]**
+
+Reviews now carry a `status` (`PENDING` / `APPROVED` / `HIDDEN`) and only
+`APPROVED` ones reach the site. The seed creates the six placeholders as
+`PENDING`, and the `20260927120000_reviews` migration moves any existing
+placeholder row (body starting `[Paste this customer`) to `PENDING` rather
+than carrying `active = true` over as live. Approving a placeholder is refused
+twice over: `adminReviewSchema` rejects it, and `setReviewStatusAction`
+filters it out of the quick-approve update. The homepage wording no longer
+claims every review is from Google, since customers can now leave one on the
+site. What's left is item 3 in `STATUS.md`: pasting in the real text.
+
+<details>
+<summary>Original write-up</summary>
+
 
 `prisma/seed.ts` seeds six testimonials with real first-name-plus-initial
 attributions (Nicola R., Donna M., Sophie T., Katie L., Wendy P., Rebecca H.)
@@ -116,6 +130,8 @@ a to-do is not a guard.
 **Fix:** seed placeholders with `active: false`, so they are invisible until
 the real text is pasted in and the row is switched on. One-line change in the
 seed's `createMany`, and it makes the failure mode safe by default.
+
+</details>
 
 ---
 
@@ -284,6 +300,13 @@ schema level, so a bot that fills the honeypot gets a **422 with field errors**
 bot fills company="Acme":  safeParse.success === false   → 422, branch never reached
 human leaves it blank:     data.company === ""           → falsy, branch never reached
 ```
+
+`/api/reviews` (added 27 Sep 2026) does the honeypot properly — the field is
+checked after parsing, so a bot gets a plain 200 — but it has no rate limiting
+either. It is less exposed than the other two: it emails only the admin (and
+only while `emailReviewToAdmin` is on), never the address typed into the form,
+and everything it saves waits in the moderation queue. A flood would bury real
+reviews in Admin → Reviews rather than reach the public site.
 
 With no rate limiting, `/api/contact` and `/api/bookings` will each accept
 unlimited submissions, and every one sends **two** emails once SMTP is

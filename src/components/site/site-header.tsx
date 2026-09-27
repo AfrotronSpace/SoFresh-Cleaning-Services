@@ -12,6 +12,7 @@ import { cn, telLink, whatsappLink } from "@/lib/utils";
 const LINKS = [
   { href: "/services", label: "Services" },
   { href: "/gallery", label: "Our work" },
+  { href: "/reviews", label: "Reviews" },
   { href: "/areas", label: "Areas we cover" },
   { href: "/help", label: "Help centre" },
   { href: "/contact", label: "Contact" },
@@ -67,12 +68,12 @@ export function SiteHeader({
                 href={link.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "relative rounded-md px-3.5 py-2 text-[0.9375rem] font-medium transition-colors",
+                  "relative whitespace-nowrap rounded-md px-2.5 py-2 text-[0.9375rem] font-medium transition-colors xl:px-3.5",
                   active ? "text-forest" : "text-sage hover:text-forest",
                 )}
               >
                 {link.label}
-                {active && <span className="absolute inset-x-3.5 -bottom-px h-0.5 rounded-full bg-champagne" />}
+                {active && <span className="absolute inset-x-2.5 -bottom-px h-0.5 rounded-full bg-champagne xl:inset-x-3.5" />}
               </Link>
             );
           })}
@@ -81,7 +82,7 @@ export function SiteHeader({
         <div className="flex items-center gap-2">
           <a
             href={telLink(phone)}
-            className="hidden items-center gap-2 rounded-md px-3 py-2 text-[0.9375rem] font-medium text-forest transition-colors hover:bg-mist md:inline-flex"
+            className="hidden items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-[0.9375rem] font-medium text-forest transition-colors hover:bg-mist md:inline-flex lg:hidden xl:inline-flex"
           >
             <Phone className="size-4" />
             {phone}

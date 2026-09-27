@@ -1,4 +1,4 @@
-import type { GalleryJob, GalleryMedia, MediaType, Prisma } from "@prisma/client";
+import type { GalleryMedia, MediaType, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { publicObjectUrl } from "@/lib/r2";
 import { formatDate } from "@/lib/utils";
@@ -13,12 +13,17 @@ import {
   type PublicSlot,
 } from "@/lib/gallery";
 
-type JobWithMedia = GalleryJob & { media: GalleryMedia[]; service: { slug: string; name: string } | null };
-
 const mediaInclude = {
   media: { orderBy: { sortOrder: "asc" } },
   service: { select: { slug: true, name: true } },
+  reviews: {
+    where: { status: "APPROVED" },
+    orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+    select: { id: true, authorName: true, area: true, body: true, rating: true, source: true },
+  },
 } satisfies Prisma.GalleryJobInclude;
+
+type JobWithMedia = Prisma.GalleryJobGetPayload<{ include: typeof mediaInclude }>;
 
 const publicOrder = [
   { featured: "desc" },
@@ -76,6 +81,7 @@ export function toPublicJob(job: JobWithMedia): PublicJob | null {
     area: job.area,
     service: job.service,
     frames,
+    reviews: job.reviews,
   };
 }
 

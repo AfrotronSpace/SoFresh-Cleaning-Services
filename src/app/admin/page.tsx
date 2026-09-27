@@ -18,7 +18,7 @@ export default async function AdminOverviewPage() {
 
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-  const [inReview, quoted, confirmedThisWeek, newEnquiries, recent, pipeline, serviceCount] = await Promise.all([
+  const [inReview, quoted, confirmedThisWeek, newEnquiries, recent, pipeline, serviceCount, pendingReviews] = await Promise.all([
     prisma.booking.count({ where: { status: "IN_REVIEW" } }),
     prisma.booking.count({ where: { status: "QUOTED" } }),
     prisma.booking.count({ where: { status: "CONFIRMED", updatedAt: { gte: weekAgo } } }),
@@ -29,6 +29,7 @@ export default async function AdminOverviewPage() {
       where: { status: { in: ["QUOTED", "CONFIRMED"] } },
     }),
     prisma.service.count({ where: { active: true } }),
+    prisma.testimonial.count({ where: { status: "PENDING" } }),
   ]);
 
   const warnings = [
@@ -76,6 +77,19 @@ export default async function AdminOverviewPage() {
         <Stat label="Confirmed this week" value={confirmedThisWeek} href="/admin/bookings?status=CONFIRMED" />
         <Stat label="New enquiries" value={newEnquiries} href="/admin/enquiries" emphasis={newEnquiries > 0} />
       </div>
+
+      {pendingReviews > 0 && (
+        <Link
+          href="/admin/reviews?show=pending"
+          className="mb-8 flex items-center justify-between gap-4 rounded-xl border border-champagne bg-white px-5 py-4 text-[0.9375rem] transition-colors hover:bg-haze/60"
+        >
+          <span className="text-ink">
+            <strong className="font-semibold">{pendingReviews}</strong> review{pendingReviews === 1 ? " is" : "s are"} waiting for
+            your approval.
+          </span>
+          <span className="font-medium text-verdant">Check them →</span>
+        </Link>
+      )}
 
       <div className="mb-8 rounded-2xl border border-border bg-white p-6">
         <p className="text-sm text-sage">Quoted and confirmed work on the books</p>

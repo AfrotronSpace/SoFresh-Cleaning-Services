@@ -580,6 +580,8 @@ model Testimonial {
   body       String
   source     ReviewSource @default(GOOGLE)
   status     ReviewStatus @default(PENDING)
+  /// Google's own review id, set by scripts/import-google-reviews.ts so a re-import updates rather than duplicates.
+  externalId String?      @unique
   featured   Boolean      @default(false)
   sortOrder  Int          @default(100)
 

@@ -1,4 +1,4 @@
-# Deployment — Railway + Cloudflare R2
+# Deployment — Railway + Cloudflare R2 + Zoho CPaaS
 
 Reconfigured 9 September 2026 (moved from an earlier Vercel setup). Every claim
 below was verified by actually building and running the Docker image against a
@@ -178,7 +178,7 @@ Web service → Variables.
 
 **Optional — each degrades cleanly if absent, exactly as in local dev:**
 
-`SMTP_HOST` · `SMTP_PORT` · `SMTP_USER` · `SMTP_PASSWORD` · `SMTP_FROM`
+`ZOHO_CPAAS_TOKEN` · `ZOHO_CPAAS_API_URL` · `EMAIL_FROM`
 `WHATSAPP_PHONE_NUMBER_ID` · `WHATSAPP_ACCESS_TOKEN`
 `R2_ACCOUNT_ID` · `R2_ACCESS_KEY_ID` · `R2_SECRET_ACCESS_KEY` · `R2_BUCKET`
 `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` · `NEXT_PUBLIC_R2_PUBLIC_HOST`
@@ -367,6 +367,61 @@ is false and the admin form falls back to a plain URL field.
 
 ---
 
+## Email — Zoho CPaaS
+
+Notification email goes out through **Zoho CPaaS** (formerly ZeptoMail) over
+its HTTPS API, called with plain `fetch` from `src/lib/email.ts`. There is no
+SMTP anywhere, and that is deliberate: **Railway blocks outbound SMTP on the
+Free, Trial and Hobby plans** (it only opens on Pro), so an SMTP client such
+as nodemailer would work on a laptop and then time out on every send in
+production. Do not bring nodemailer back unless the project moves to Railway
+Pro.
+
+**Cost.** The first credit is free: 10,000 emails, valid for 6 months. After
+that, credits are bought in blocks of 10,000 emails, each also valid for 6
+months, with no subscription. Every recipient counts, so a CC'd admin email
+is two. At this site's volume (2 emails per booking, 2 per contact form, 1
+per review) one block should last the full 6 months.
+
+### Setup
+
+1. Sign up at zoho.com/cpaas. New accounts go through a short review before
+   they can send freely, so start this well before launch.
+2. **Add and verify the sending domain** (`sofreshcleaning.co.uk`). Zoho
+   shows a DKIM `TXT` record and a bounce-address `CNAME`; add both at
+   whoever hosts the domain's DNS and wait for Zoho to mark them verified.
+   Nothing sends until they are. This is separate from any Zoho Mail inbox
+   records the domain already has, so leave those alone.
+3. Create a **Mail Agent** for the site and copy its **Send Mail token**
+   into `ZOHO_CPAAS_TOKEN`. The console copies it with a `Zoho-enczapikey `
+   prefix, and the code accepts it with or without.
+4. **Set `ZOHO_CPAAS_API_URL="https://cpaas.zoho.eu/v1.1/email"`.** The
+   client's account is on Zoho's **EU** data centre (confirmed 27 Sep 2026:
+   the token is accepted only by `cpaas.zoho.eu`). Left unset, the code
+   defaults to the US host, which rejects the token with
+   `401 TM_4001 Invalid API Token found`, so every email logs as `FAILED`.
+   The URL is also shown on the Mail Agent's Setup Info → API tab.
+5. Set `EMAIL_FROM` to an address on the verified domain, e.g.
+   `So Fresh Cleaning Service <info@sofreshcleaning.co.uk>`. Replies go to
+   `SITE.email` (or the customer, on admin notifications), not to this address.
+
+### How failures show up
+
+Every attempt writes a `MessageLog` row before the API call, so Admin →
+Messages always shows what happened:
+
+| Status | Meaning |
+|---|---|
+| `SENT` | Zoho accepted the message |
+| `SKIPPED` | `ZOHO_CPAAS_TOKEN` is unset |
+| `FAILED` | Zoho refused it, with the HTTP status and Zoho's error code in the `error` column (e.g. `HTTP 401 TM_3201: … Invalid API Token found`), or the API didn't answer within 15 seconds |
+
+A failure never blocks a booking, contact message or review from saving.
+"Accepted" means Zoho queued it. Bounces and spam-folder delivery only show
+up in the Zoho console's reports, not in `MessageLog`.
+
+---
+
 ## Post-deploy checklist
 
 - [ ] Deployment log shows `preDeployCommand` applying the migration, then the
@@ -381,7 +436,9 @@ is false and the admin form falls back to a plain URL field.
       full demo catalogue too — it also creates an admin when
       `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD` are set.)
 - [ ] Submit a real booking; confirm it appears in Admin → Bookings
-- [ ] Admin → Messages shows the notification attempts as `SENT` or `SKIPPED`
+- [ ] Admin → Messages shows the notification attempts as `SENT` (or
+      `SKIPPED` if email isn't set up yet), and the customer email actually
+      arrives in the inbox, not spam
 - [ ] `curl -I https://sofreshcleaning.co.uk` shows the four security headers
 - [ ] Paste a **service** page link into WhatsApp and check the preview card —
       currently broken regardless of host, `docs/FINDINGS.md` #2

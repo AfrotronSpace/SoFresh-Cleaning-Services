@@ -61,9 +61,9 @@ function SwitchRow({
   );
 }
 
-export function SettingsForm({ initial, smtpConfigured, whatsappApiConfigured }: {
+export function SettingsForm({ initial, emailConfigured, whatsappApiConfigured }: {
   initial: SettingsValues;
-  smtpConfigured: boolean;
+  emailConfigured: boolean;
   whatsappApiConfigured: boolean;
 }) {
   const [state, action] = useActionState<ActionState, FormData>(saveSettingsAction, {});
@@ -199,10 +199,10 @@ export function SettingsForm({ initial, smtpConfigured, whatsappApiConfigured }:
           </Field>
         </div>
 
-        {!smtpConfigured && (
+        {!emailConfigured && (
           <p className="mt-5 rounded-lg bg-champagne-soft/40 px-4 py-3 text-[0.9375rem] leading-relaxed text-[#5c4715]">
-            No mail server is connected yet. Emails are recorded under Messages but not delivered. Add your SMTP details to
-            the environment file to turn sending on.
+            No email service is connected yet. Emails are recorded under Messages but not delivered. Add your Zoho CPaaS
+            Send Mail token to the environment to turn sending on.
           </p>
         )}
       </Panel>

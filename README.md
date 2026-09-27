@@ -66,7 +66,8 @@ Nothing sends silently. Every email and WhatsApp message is written to `MessageL
 visible under Admin → Messages, including ones that were skipped because a service wasn't
 configured.
 
-- **Email** needs `SMTP_*` in `.env`. Without it, mail is logged as `SKIPPED` and the site
+- **Email** is sent through Zoho CPaaS's HTTPS API (Railway blocks SMTP) and needs
+  `ZOHO_CPAAS_TOKEN` in `.env`. Without it, mail is logged as `SKIPPED` and the site
   still works.
 - **WhatsApp forwarding** works with no setup at all — each booking gives you a one-tap
   `wa.me` link in the dashboard. Add `WHATSAPP_PHONE_NUMBER_ID` and `WHATSAPP_ACCESS_TOKEN`

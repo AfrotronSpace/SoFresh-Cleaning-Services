@@ -95,8 +95,11 @@ If you add an autoplaying animation, you are breaking this rule.
   machine with no network will fail here, not in your code.
 - `public/robots.txt` silently wins over `src/app/robots.ts`. The route file is
   dead. Edit the static file, or delete it and keep the route — not both.
-- The generated OG image is served at `/opengraph-image`, **not**
-  `/opengraph-image.png`. `src/lib/seo.ts` gets this wrong; see findings #2.
+- The OG image is a **static** `src/app/opengraph-image.png` (the brand
+  pack's), served at `/opengraph-image.png`, which `src/lib/seo.ts` relies on.
+  Turning it back into a generated `opengraph-image.tsx` moves the route to
+  `/opengraph-image` and silently breaks every page's share preview
+  (findings #2).
 - Everything under `(site)` is dynamically rendered because the layout calls
   `getSession()` (a `cookies()` read) and most pages set
   `export const dynamic = "force-dynamic"`. There is no ISR anywhere.
@@ -125,6 +128,10 @@ prisma/seed.ts              Real service catalogue, areas, settings, placeholder
 prisma.config.ts            Prisma CLI config (schema, migrations, seed). Loads .env via
                             dotenv — the CLI stops doing that once this file exists.
 src/lib/constants.ts        SITE object + all enum→label maps. Start here.
+public/brand/               The client's brand pack (png/, svg/) — originals, never edit.
+                            web/ holds copies derived for the site: the trimmed
+                            horizontal logo (header, emails) and the reversed logo
+                            without its background (dark footer). <Logo> uses both.
 src/lib/validations.ts      Every Zod schema.
 src/lib/settings.ts         loadSettings() — cached SiteSetting with a safe fallback.
 src/lib/content.ts          Help Centre copy. Feeds the FAQ page, homepage accordion
@@ -162,6 +169,6 @@ railway.json                Build/deploy config: Dockerfile builder, migrate
 
 ## Before you touch anything
 
-`docs/FINDINGS.md` has 27 open items ranked by severity, each with a file and
+`docs/FINDINGS.md` has 26 open items ranked by severity, each with a file and
 line reference and a suggested fix. The S1 section lists the launch blockers. If you
 are picking up work, start there rather than reading the codebase cold.

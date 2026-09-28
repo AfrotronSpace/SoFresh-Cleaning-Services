@@ -57,7 +57,7 @@ export function localBusinessJsonLd(settings: {
     telephone: settings.phone,
     email: settings.email,
     image: `${SITE.url}/opengraph-image.png`,
-    logo: `${SITE.url}/icon.svg`,
+    logo: `${SITE.url}/brand/png/so-fresh-01-primary.png`,
     priceRange: "££",
     foundingDate: String(SITE.founded),
     address: { "@type": "PostalAddress", addressRegion: "Essex", addressCountry: "GB" },

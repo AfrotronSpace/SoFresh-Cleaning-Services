@@ -122,6 +122,8 @@ If you add an autoplaying animation, you are breaking this rule.
 ```
 prisma/schema.prisma        15 models. Deliberately no payment or card model.
 prisma/seed.ts              Real service catalogue, areas, settings, placeholder reviews.
+prisma.config.ts            Prisma CLI config (schema, migrations, seed). Loads .env via
+                            dotenv — the CLI stops doing that once this file exists.
 src/lib/constants.ts        SITE object + all enum→label maps. Start here.
 src/lib/validations.ts      Every Zod schema.
 src/lib/settings.ts         loadSettings() — cached SiteSetting with a safe fallback.

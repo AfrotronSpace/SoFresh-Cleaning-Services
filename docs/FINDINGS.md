@@ -54,7 +54,20 @@ new developer following `README.md` gets an empty site and an unreachable
 Any future script run outside Next (a cron job, a data migration, a backfill)
 hits this same wall, so fixing it properly is worth the ten minutes.
 
-### 2. Every social share of a service page has a broken preview image **[verified]**
+### 2. ~~Every social share of a service page has a broken preview image~~ — resolved 28 Sep 2026 **[verified]**
+
+The generated `src/app/opengraph-image.tsx` was replaced by the brand pack's
+own OG image as a static `src/app/opengraph-image.png`. Next serves a static
+metadata image at `/opengraph-image.png`, which is exactly the URL `seo.ts`
+and `localBusinessJsonLd` already pointed at. Verified against a production
+build: `GET /opengraph-image.png -> 200 image/png`, and `/help` and
+`/services` both render an `og:image` pointing at it. If the image is ever
+turned back into a generated `.tsx` route, this breaks again.
+
+<details>
+<summary>Original write-up</summary>
+
+
 
 `src/lib/seo.ts:17` defaults the OG image to `/opengraph-image.png`. The route
 Next actually generates is `/opengraph-image`:
@@ -78,6 +91,8 @@ channel (AFT-F-01 E5), and a pasted service link will show no preview card.
 **Fix:** in `seo.ts`, drop the `image` default entirely and let Next's
 file-based metadata inherit — or, if an explicit default is wanted, use
 `new URL("/opengraph-image", SITE.url)`. Same for the JSON-LD `image`.
+
+</details>
 
 ### 3. Literal HTML entity rendered as text on 6 of 10 service pages **[verified]**
 

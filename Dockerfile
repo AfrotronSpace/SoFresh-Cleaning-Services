@@ -89,6 +89,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 # without re-solving problem #1 above.
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+# prisma.config.ts tells `migrate deploy` where the schema and migrations are.
+# It imports dotenv, which is a real `dependencies` entry for the same reason
+# the Prisma CLI is (see above).
+COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 
 # `npm run create-admin` (and `prisma/seed.ts`) run via `tsx` inside this same

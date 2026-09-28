@@ -440,14 +440,13 @@ up in the Zoho console's reports, not in `MessageLog`.
       `SKIPPED` if email isn't set up yet), and the customer email actually
       arrives in the inbox, not spam
 - [ ] `curl -I https://sofreshcleaning.co.uk` shows the four security headers
-- [ ] Paste a **service** page link into WhatsApp and check the preview card —
-      currently broken regardless of host, `docs/FINDINGS.md` #2
+- [ ] Paste a **service** page link into WhatsApp and check the preview card
+      shows the So Fresh logo image
 
 ## Known issues that affect deployment
 
 | Issue | Impact |
 |---|---|
 | `docs/FINDINGS.md` #1 — seed is broken | You cannot populate the production database until this is fixed. Blocks launch. |
-| `docs/FINDINGS.md` #2 — OG image 404s | Every shared service link has no preview image. WhatsApp is the client's primary channel. |
 | Config as Code deprecation, 2026-12-01 | `railway.json` stops being read after that date — migrate to Infrastructure as Code before then. |
 | Every route is `ƒ` (dynamic) | No page is cached. Fine at launch volume; the largest available performance win later (`docs/STATUS.md` item 15). |

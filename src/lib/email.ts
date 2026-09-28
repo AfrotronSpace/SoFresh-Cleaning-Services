@@ -152,9 +152,9 @@ ${opts.preheader ? `<div style="display:none;max-height:0;overflow:hidden;opacit
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eff3f0;padding:28px 12px;">
 <tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -20px rgba(7,39,27,.5)">
-  <tr><td style="background:#0d3b2a;padding:22px 28px;">
-    <div style="color:#ffffff;font-size:18px;letter-spacing:-.2px;font-weight:600;">${SITE.name}</div>
-    <div style="color:#c6a86b;font-size:12px;margin-top:3px;">Essex &amp; Suffolk</div>
+  <tr><td style="padding:24px 28px 20px;border-bottom:1px solid #e2e7e3;">
+    <img src="${SITE.url}/brand/web/logo-horizontal.png" width="200" height="53" alt="${SITE.name}" style="display:block;border:0;width:200px;height:auto;color:#1e6b34;font-size:18px;font-weight:600;">
+    <div style="color:#5a6b63;font-size:12px;margin-top:8px;">Essex &amp; Suffolk</div>
   </td></tr>
   <tr><td style="padding:30px 28px 8px;">
     <h1 style="margin:0 0 14px;font-size:21px;line-height:1.3;font-weight:600;color:#10201a;">${opts.heading}</h1>

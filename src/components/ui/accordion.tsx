@@ -22,13 +22,15 @@ const AccordionTrigger = React.forwardRef<
     <AccordionPrimitive.Trigger
       ref={ref}
       className={cn(
-        "flex flex-1 items-start justify-between gap-4 py-5 text-left text-[1.0625rem] font-medium leading-snug text-ink transition-colors hover:text-verdant [&[data-state=open]>svg]:rotate-45",
+        "group flex flex-1 items-start justify-between gap-6 py-6 text-left font-display text-[1.375rem] font-semibold leading-snug text-ink transition-colors duration-300 hover:text-emerald [&[data-state=open]>span]:rotate-45 [&[data-state=open]>span]:border-champagne [&[data-state=open]>span]:bg-champagne-soft/40",
         className,
       )}
       {...props}
     >
       {children}
-      <Plus className="mt-0.5 size-5 shrink-0 text-champagne transition-transform duration-300" />
+      <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full border border-forest/15 text-gold-deep transition-[transform,border-color,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:border-champagne">
+        <Plus className="size-4" />
+      </span>
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
 ));

@@ -87,8 +87,9 @@ a banner while anything is waiting.
 1. **Fix the remaining S1 defects** in `docs/FINDINGS.md` — 404 OG images and
    the literal `&rsquo;` on six service pages. (The broken seed and the
    placeholder reviews are resolved.)
-2. **Real photography.** Everything in `public/images/` is a generated
-   placeholder with the word PLACEHOLDER printed on it. The client has sent
+2. **Real photography.** The hero and service images in `public/images/`
+   are Pexels stock as of 4 Oct 2026 (`docs/IMAGE-CREDITS.md`); the
+   before/after pair is still a generated placeholder. The client has sent
    200+ photos and videos (via WhatsApp, unsorted) and confirmed customer
    consent to publish them. The `/gallery` pipeline to take them is built;
    what's left is creating the public R2 bucket, then uploading the whole

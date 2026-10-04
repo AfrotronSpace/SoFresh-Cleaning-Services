@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Mail, MessageCircle, Phone } from "lucide-react";
 import { Logo } from "@/components/site/logo";
+import { Sparkle } from "@/components/site/ornaments";
 import { SITE } from "@/lib/constants";
 import { telLink, whatsappLink } from "@/lib/utils";
 
@@ -42,8 +43,21 @@ export function SiteFooter({
   openingHours: string;
 }) {
   return (
-    <footer className="mt-24 bg-forest-deep text-white/70">
-      <div className="shell grid gap-12 py-16 md:grid-cols-12 md:py-20">
+    <footer className="surface-emerald relative mt-24 overflow-hidden text-white/70">
+      <div aria-hidden className="hairline-gold absolute inset-x-0 top-0" />
+      <div aria-hidden className="grain-light absolute inset-0 opacity-60" />
+
+      <div className="shell relative border-b border-white/10 py-14 md:py-16">
+        <p className="flex items-center gap-3 text-[0.75rem] font-medium uppercase tracking-[0.26em] text-champagne">
+          <Sparkle className="size-2.5" />
+          Essex &amp; Suffolk
+        </p>
+        <p className="mt-5 max-w-3xl font-display text-[2rem] leading-[1.08] text-white md:text-[3.25rem]">
+          Detail-led cleaning, <em className="text-gold">properly finished.</em>
+        </p>
+      </div>
+
+      <div className="shell relative grid gap-12 py-16 md:grid-cols-12 md:py-20">
         <div className="md:col-span-4">
           <Logo tone="light" />
           <p className="mt-5 max-w-xs text-[0.9375rem] leading-relaxed">
@@ -70,11 +84,11 @@ export function SiteFooter({
         </div>
 
         <div className="md:col-span-3">
-          <h2 className="font-display text-base font-medium text-white">Services</h2>
+          <h2 className="font-sans text-[0.75rem] font-medium uppercase tracking-[0.22em] text-champagne">Services</h2>
           <ul className="mt-4 space-y-2.5 text-[0.9375rem]">
             {SERVICE_LINKS.map((link) => (
               <li key={link.href}>
-                <Link href={link.href} className="transition-colors hover:text-champagne">
+                <Link href={link.href} className="transition-colors duration-300 hover:text-champagne">
                   {link.label}
                 </Link>
               </li>
@@ -83,11 +97,11 @@ export function SiteFooter({
         </div>
 
         <div className="md:col-span-2">
-          <h2 className="font-display text-base font-medium text-white">Company</h2>
+          <h2 className="font-sans text-[0.75rem] font-medium uppercase tracking-[0.22em] text-champagne">Company</h2>
           <ul className="mt-4 space-y-2.5 text-[0.9375rem]">
             {COMPANY_LINKS.map((link) => (
               <li key={link.href}>
-                <Link href={link.href} className="transition-colors hover:text-champagne">
+                <Link href={link.href} className="transition-colors duration-300 hover:text-champagne">
                   {link.label}
                 </Link>
               </li>
@@ -96,13 +110,13 @@ export function SiteFooter({
         </div>
 
         <div className="md:col-span-3">
-          <h2 className="font-display text-base font-medium text-white">Where we work</h2>
+          <h2 className="font-sans text-[0.75rem] font-medium uppercase tracking-[0.22em] text-champagne">Where we work</h2>
           <ul className="mt-4 flex flex-wrap gap-x-3 gap-y-2 text-[0.9375rem]">
             {areas.map((area) => (
               <li key={area}>
                 <Link
                   href={`/areas/${area.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-                  className="transition-colors hover:text-champagne"
+                  className="transition-colors duration-300 hover:text-champagne"
                 >
                   {area}
                 </Link>
@@ -115,7 +129,7 @@ export function SiteFooter({
         </div>
       </div>
 
-      <div className="border-t border-white/10">
+      <div className="relative border-t border-white/10">
         <div className="shell flex flex-col gap-4 py-6 text-sm md:flex-row md:items-center md:justify-between">
           <p>
             &copy; {new Date().getFullYear()} {SITE.legalName}. Registered in England &amp; Wales, company no. {SITE.companyNumber}.
@@ -123,7 +137,7 @@ export function SiteFooter({
           <ul className="flex flex-wrap gap-x-5 gap-y-2">
             {LEGAL_LINKS.map((link) => (
               <li key={link.href}>
-                <Link href={link.href} className="transition-colors hover:text-champagne">
+                <Link href={link.href} className="transition-colors duration-300 hover:text-champagne">
                   {link.label}
                 </Link>
               </li>

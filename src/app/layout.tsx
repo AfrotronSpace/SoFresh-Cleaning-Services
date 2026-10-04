@@ -1,20 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Public_Sans } from "next/font/google";
+import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { SITE } from "@/lib/constants";
 import "./globals.css";
 
-const fraunces = Fraunces({
+// Display: a high-contrast Garamond with a true italic, used for headlines and
+// the italic "second line" emphasis. Body: a quiet geometric sans that echoes
+// the wordmark in the client's logo and stays legible in forms and the admin.
+const display = Cormorant_Garamond({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-fraunces",
-  axes: ["SOFT", "WONK", "opsz"],
+  variable: "--font-cormorant",
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
 });
 
-const publicSans = Public_Sans({
+const body = DM_Sans({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-public-sans",
+  variable: "--font-dm-sans",
 });
 
 export const metadata: Metadata = {
@@ -73,8 +77,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#0d3b2a" },
-    { media: "(prefers-color-scheme: dark)", color: "#07271b" },
+    { media: "(prefers-color-scheme: light)", color: "#062a1d" },
+    { media: "(prefers-color-scheme: dark)", color: "#03170f" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -84,7 +88,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-GB" className={`${fraunces.variable} ${publicSans.variable}`}>
+    <html lang="en-GB" className={`${display.variable} ${body.variable}`}>
       <body className="min-h-dvh bg-background antialiased">
         <a
           href="#main"

@@ -53,14 +53,34 @@ asking. Breaking one is a business problem, not a style problem.
 
 ## Design rules
 
-White base (white is a stated brand colour, not a default), forest green
-structural, champagne gold only where the eye should stop — price, seam, one
-CTA per screen. Fraunces display + Public Sans body. The `.seam` hairline
-motif in `globals.css` replaces horizontal dividers. Mobile-first.
+Reset on 4 Oct 2026 at the owner's request for a more luxurious site: deeper
+colour, more luxurious type, more animation, with the home page first.
 
-**One non-user-triggered animation on the whole site**: the hero cross-fade in
-`src/components/site/hero.tsx`. Everything else moves only when someone acts.
-If you add an autoplaying animation, you are breaking this rule.
+White is still the base (it is a stated brand colour, not a default). Depth
+sits on top of it: an emerald scale from `--emerald` down to `--onyx`, gold as
+a gradient (`.text-gold`, `.bg-gold`) not a flat fill, and `--ivory` for
+alternating bands. Dark sections use `.surface-emerald`, never one flat green.
+Cormorant Garamond display + DM Sans body. Headings carry `font-size-adjust`,
+so Cormorant's small x-height is corrected site-wide; a heading set in the
+body face needs `font-sans`, which opts back out. Mobile-first.
+
+Three motifs, all in `globals.css` and `src/components/site/ornaments.tsx`:
+the `.seam` hairline, the four-point `<Sparkle>` taken from the client's logo,
+and thin inset gold frames. Small tracked capitals (`<Eyebrow>`) sit above
+section headings; the second half of a headline goes in gold italic `<em>`.
+
+**Motion is allowed, but it is one system.** Use `--ease-lux` and long
+durations. Scroll reveals are a `data-reveal` attribute on a wrapper, driven
+by `<ScrollReveal>` in the site layout — it only hides elements that start
+below the fold, so the page is fully visible with no JavaScript. Do not put
+`data-reveal` on an element that has its own hover transition. Everything
+must still stop under `prefers-reduced-motion`; the global rule and the
+checks in `hero.tsx`, `before-after.tsx` and `scroll-reveal.tsx` do this.
+
+Hero headlines are admin-editable and their line breaks are kept: with two or
+more lines, the last is set in gold italic. Photography in `public/images/` is
+Pexels stock (sources in `docs/IMAGE-CREDITS.md`) until the client's own job
+photos replace it. The before/after pair is still the original placeholder.
 
 ## Conventions worth copying
 

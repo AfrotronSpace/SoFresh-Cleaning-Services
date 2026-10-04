@@ -4,24 +4,36 @@
 /* ============================================================
    So Fresh — design tokens
 
-   Base is white, not cream: white is one of the two stated brand
-   colours. Green does the structural work, champagne is used only
-   where we want the eye to stop (price, seam, one CTA per screen).
+   Base is still white: white is one of the two stated brand
+   colours. Depth comes from what sits on it — an emerald scale
+   that runs from jewel green down to near-black, a burnished
+   gold that is a gradient rather than a flat fill, and a warm
+   ivory for alternating bands.
    ============================================================ */
 
 :root {
-  /* raw palette */
+  /* raw palette — emerald scale, darkest first */
+  --onyx: #03170f;
+  --forest-deep: #062a1d;
+  --forest: #0b3d2b;
+  --emerald: #0f5a3d;
+  --verdant: #1f7a55;
+
+  /* neutrals */
   --paper: #ffffff;
+  --ivory: #faf7f0;
   --mist: #eff3f0;
   --haze: #f6f8f6;
-  --ink: #10201a;
-  --forest: #0d3b2a;
-  --forest-deep: #07271b;
-  --verdant: #1f7a55;
-  --sage: #5a6b63;
+  --ink: #0e1d17;
+  --sage: #55665e;
+  --line: #e2e7e3;
+
+  /* gold scale */
   --champagne: #c6a86b;
   --champagne-soft: #eadfc7;
-  --line: #e2e7e3;
+  --gold-light: #f0dfae;
+  --gold-deep: #8a6c2f;
+  --gold-gradient: linear-gradient(115deg, #f3e3b3 0%, #d2b572 28%, #b8975a 52%, #e6d09a 78%, #c6a86b 100%);
 
   /* semantic tokens (shadcn contract) */
   --radius: 0.75rem;
@@ -45,6 +57,9 @@
   --border: var(--line);
   --input: #dce3de;
   --ring: var(--verdant);
+
+  /* One easing for everything that moves: quick to start, long to settle. */
+  --ease-lux: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @theme inline {
@@ -70,18 +85,23 @@
   --color-ring: var(--ring);
 
   --color-paper: var(--paper);
+  --color-ivory: var(--ivory);
   --color-mist: var(--mist);
   --color-haze: var(--haze);
   --color-ink: var(--ink);
+  --color-onyx: var(--onyx);
   --color-forest: var(--forest);
   --color-forest-deep: var(--forest-deep);
+  --color-emerald: var(--emerald);
   --color-verdant: var(--verdant);
   --color-sage: var(--sage);
   --color-champagne: var(--champagne);
   --color-champagne-soft: var(--champagne-soft);
+  --color-gold-light: var(--gold-light);
+  --color-gold-deep: var(--gold-deep);
 
-  --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-cormorant), "Cormorant Garamond", ui-serif, Georgia, serif;
 
   /* Radii are deliberately not uniform: large on feature surfaces,
      small on controls, so hierarchy reads without extra chrome. */
@@ -90,9 +110,12 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1.25rem;
   --radius-2xl: 1.75rem;
+  --radius-3xl: 2.25rem;
 
-  --shadow-lift: 0 1px 2px rgb(13 59 42 / 0.04), 0 12px 32px -12px rgb(13 59 42 / 0.16);
-  --shadow-panel: 0 24px 64px -32px rgb(7 39 27 / 0.4);
+  --shadow-lift: 0 1px 2px rgb(6 42 29 / 0.05), 0 18px 40px -16px rgb(6 42 29 / 0.22);
+  --shadow-panel: 0 30px 80px -36px rgb(3 23 15 / 0.55);
+  --shadow-float: 0 2px 4px rgb(6 42 29 / 0.04), 0 24px 48px -20px rgb(6 42 29 / 0.25), 0 60px 100px -50px rgb(3 23 15 / 0.35);
+  --shadow-gold: 0 10px 30px -12px rgb(154 123 60 / 0.55);
 }
 
 @layer base {
@@ -109,22 +132,31 @@
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
-    font-feature-settings: "cv05" 1, "ss01" 1;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
-  /* Display face. Fraunces is variable — we pull the optical size up and
-     soften the terminals so large headings read warm rather than clinical. */
+  /* Display face. Cormorant has a small x-height, so font-size-adjust lifts
+     it to roughly the optical size the layout was drawn for — every heading
+     across the site scales together without re-tuning each page. */
   h1, h2, h3, .font-display {
     font-family: var(--font-display);
-    font-variation-settings: "SOFT" 40, "WONK" 0, "opsz" 72;
-    letter-spacing: -0.021em;
+    font-size-adjust: 0.44;
+    font-feature-settings: "lnum" 1, "kern" 1, "liga" 1;
+    letter-spacing: -0.012em;
     text-wrap: balance;
   }
 
   h1 { font-weight: 500; }
-  h2, h3 { font-weight: 500; }
+  h2, h3 { font-weight: 600; }
+
+  /* Headings set in the body face (card and step titles) opt back out. */
+  .font-sans {
+    font-size-adjust: none;
+    letter-spacing: normal;
+  }
+
+  h1 em, h2 em, h3 em, .font-display em { font-style: italic; font-weight: 500; }
 
   p, li { text-wrap: pretty; }
 
@@ -177,13 +209,98 @@
       var(--champagne) 82%,
       transparent
     );
-    opacity: 0.55;
+    opacity: 0.6;
   }
 
   .rule-champagne {
     height: 1px;
     background: linear-gradient(to right, var(--champagne), transparent);
   }
+
+  /* Full-width gold hairline that fades at both ends. */
+  .hairline-gold {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--champagne) 20%, var(--gold-light) 50%, var(--champagne) 80%, transparent);
+    opacity: 0.7;
+  }
+
+  /* Small tracked capitals above a heading. Gold-deep on light surfaces for
+     contrast; switch to champagne with .eyebrow-light on dark ones. */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--gold-deep);
+  }
+  .eyebrow-light { color: var(--champagne); }
+
+  /* Burnished gold as text. Falls back to flat champagne without clip support. */
+  .text-gold {
+    color: var(--champagne);
+    background-image: var(--gold-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .bg-gold { background-image: var(--gold-gradient); }
+
+  /* Dark surfaces are never one flat green: lit from the top-left, falling
+     off to near-black, with a faint warm glow opposite. */
+  .surface-emerald {
+    background-color: var(--forest-deep);
+    background-image:
+      radial-gradient(60rem 40rem at 100% 100%, rgb(198 168 107 / 0.1), transparent 60%),
+      radial-gradient(70rem 50rem at 0% 0%, rgb(31 122 85 / 0.38), transparent 62%),
+      linear-gradient(160deg, var(--forest) 0%, var(--forest-deep) 45%, var(--onyx) 100%);
+  }
+
+  .surface-ivory {
+    background-image: linear-gradient(180deg, var(--ivory) 0%, #f4f1e8 100%);
+  }
+
+  /* A thin inset gold frame, like the mount around a photograph. */
+  .frame-gold { position: relative; }
+  .frame-gold::after {
+    content: "";
+    position: absolute;
+    inset: 0.625rem;
+    border: 1px solid rgb(198 168 107 / 0.42);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  /* Light sweeping across a button on hover. */
+  .sheen { position: relative; overflow: hidden; isolation: isolate; }
+  .sheen::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    left: -60%;
+    width: 45%;
+    background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.32), transparent);
+    transform: skewX(-18deg);
+    transition: left 0.9s var(--ease-lux);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .sheen:hover::after, .sheen:focus-visible::after { left: 120%; }
+
+  /* Underline that draws in from the left. */
+  .link-draw {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.5s var(--ease-lux);
+  }
+  .link-draw:hover, .group:hover .link-draw { background-size: 100% 1px; }
 
   .prose-sofresh {
     max-width: 68ch;
@@ -212,8 +329,62 @@
     background-size: 14px 14px;
   }
 
+  /* Fine dot texture for dark surfaces. */
+  .grain-light {
+    background-image: radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.05) 1px, transparent 0);
+    background-size: 18px 18px;
+  }
+
   .scrollbar-none { scrollbar-width: none; }
   .scrollbar-none::-webkit-scrollbar { display: none; }
+
+  .marquee-mask {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  }
+  .marquee-track:hover { animation-play-state: paused; }
+}
+
+/* ============================================================
+   Scroll reveal
+
+   <ScrollReveal /> arms only the [data-reveal] elements that start
+   below the fold, so anything already on screen (and everything, if
+   JavaScript never runs) is simply visible. Put data-reveal on a
+   wrapper, not on an element with its own hover transition.
+   ============================================================ */
+[data-reveal-state] {
+  transition:
+    opacity 1s var(--ease-lux) var(--reveal-delay, 0ms),
+    transform 1.1s var(--ease-lux) var(--reveal-delay, 0ms),
+    clip-path 1.2s var(--ease-lux) var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+[data-reveal-state="armed"] { opacity: 0; transform: translate3d(0, 2rem, 0); }
+[data-reveal="fade"][data-reveal-state="armed"] { transform: none; }
+[data-reveal="left"][data-reveal-state="armed"] { transform: translate3d(-2.5rem, 0, 0); }
+[data-reveal="right"][data-reveal-state="armed"] { transform: translate3d(2.5rem, 0, 0); }
+[data-reveal="scale"][data-reveal-state="armed"] { transform: scale(0.94); }
+[data-reveal="wipe"][data-reveal-state="armed"] { opacity: 1; transform: none; clip-path: inset(0 0 100% 0); }
+[data-reveal="wipe"][data-reveal-state="in"] { clip-path: inset(0 0 0 0); }
+[data-reveal="line"][data-reveal-state="armed"] { opacity: 1; transform: scaleX(0); }
+[data-reveal="line"] { transform-origin: left center; }
+
+@media print {
+  [data-reveal-state] { opacity: 1 !important; transform: none !important; clip-path: none !important; }
+}
+
+/* Hero copy rises out of a mask, one line after another. Pure CSS so it
+   plays on first paint without waiting for hydration, and again whenever
+   a slide remounts. */
+.hero-line {
+  display: block;
+  animation: hero-rise 1.15s var(--ease-lux) both;
+  animation-delay: calc(var(--i, 0) * 130ms + 120ms);
+}
+.hero-fade {
+  animation: hero-fade 1.2s var(--ease-lux) both;
+  animation-delay: calc(var(--i, 0) * 130ms + 120ms);
 }
 
 /* Nobody should get motion sickness from a cleaning website. */
@@ -223,16 +394,21 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
   }
+  .marquee-track { animation: none !important; }
 }
 
 /* Radix accordion needs real keyframes to animate to auto height. */
 @theme inline {
-  --animate-accordion-down: accordion-down 300ms cubic-bezier(0.32, 0.72, 0, 1);
-  --animate-accordion-up: accordion-up 250ms cubic-bezier(0.32, 0.72, 0, 1);
-  --animate-marquee: marquee 44s linear infinite;
+  --animate-accordion-down: accordion-down 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-accordion-up: accordion-up 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-marquee: marquee 48s linear infinite;
+  --animate-twinkle: twinkle 4.5s ease-in-out infinite;
+  --animate-drift: drift 16s ease-in-out infinite;
 }
 
 @keyframes accordion-down {
@@ -246,4 +422,24 @@
 @keyframes marquee {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
+}
+@keyframes hero-rise {
+  from { transform: translate3d(0, 108%, 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+@keyframes hero-fade {
+  from { opacity: 0; transform: translate3d(0, 1rem, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes hero-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.82) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(12deg); }
+}
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(2.5%, -3%, 0); }
 }

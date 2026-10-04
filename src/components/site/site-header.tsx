@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Clock, Mail, Menu, MessageCircle, Phone, User, X } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useScroll, useSpring } from "framer-motion";
 import { Logo } from "@/components/site/logo";
 import { cn, telLink, whatsappLink } from "@/lib/utils";
 
@@ -40,6 +40,8 @@ export function SiteHeader({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { scrollYProgress } = useScroll();
+  const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 28, mass: 0.4 });
 
   useEffect(() => setOpen(false), [pathname]);
 
@@ -62,7 +64,8 @@ export function SiteHeader({
 
   return (
     <>
-      <div className="bg-forest text-[0.8125rem] text-white/80">
+      <div className="relative bg-gradient-to-r from-onyx via-forest-deep to-forest text-[0.8125rem] text-white/80">
+        <div aria-hidden className="hairline-gold absolute inset-x-0 bottom-0 opacity-50" />
         <div className="shell flex h-10 items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-5">
             <a href={telLink(phone)} className="inline-flex items-center gap-1.5 whitespace-nowrap font-medium text-white transition-colors hover:text-champagne-soft">
@@ -84,7 +87,7 @@ export function SiteHeader({
               href={whatsappLink(whatsapp, "Hi, I'd like a quote for a clean.")}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#1f8f4e] px-3 font-medium text-white transition-colors hover:bg-[#177a41]"
+              className="inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-full bg-gradient-to-b from-[#25a35a] to-[#1a8346] px-3.5 font-medium text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.2)] transition-[filter] duration-300 hover:brightness-110"
             >
               <MessageCircle className="size-3.5" />
               <span className="sm:hidden">WhatsApp</span>
@@ -104,8 +107,10 @@ export function SiteHeader({
 
       <header
         className={cn(
-          "sticky top-0 z-50 border-b transition-colors duration-300",
-          scrolled || open ? "border-border bg-white/95 backdrop-blur-md" : "border-transparent bg-white",
+          "sticky top-0 z-50 border-b transition-[background-color,border-color,box-shadow] duration-500",
+          scrolled || open
+            ? "border-border/70 bg-white/85 shadow-[0_12px_40px_-24px_rgb(6_42_29/0.45)] backdrop-blur-xl"
+            : "border-transparent bg-white",
         )}
       >
         <div className="shell flex h-16 items-center justify-between gap-6 md:h-[4.5rem]">
@@ -120,12 +125,17 @@ export function SiteHeader({
                   href={link.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "relative whitespace-nowrap rounded-md px-3.5 py-2 text-[0.9375rem] font-medium transition-colors",
+                    "group relative whitespace-nowrap rounded-md px-3.5 py-2 text-[0.8125rem] font-medium uppercase tracking-[0.14em] transition-colors duration-300",
                     active ? "text-forest" : "text-sage hover:text-forest",
                   )}
                 >
                   {link.label}
-                  {active && <span className="absolute inset-x-3.5 -bottom-px h-0.5 rounded-full bg-champagne" />}
+                  <span
+                    className={cn(
+                      "absolute inset-x-3.5 bottom-0.5 h-px origin-left bg-gold transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                      active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+                    )}
+                  />
                 </Link>
               );
             })}
@@ -143,6 +153,9 @@ export function SiteHeader({
           </button>
         </div>
 
+        {/* Reading progress: a gold hairline that fills as the page scrolls. */}
+        <motion.div aria-hidden style={{ scaleX: progress }} className="absolute inset-x-0 -bottom-px h-px origin-left bg-gold" />
+
         <AnimatePresence>
           {open && (
             <motion.div
@@ -150,7 +163,7 @@ export function SiteHeader({
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.24, ease: [0.32, 0.72, 0, 1] }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               className="overflow-hidden border-t border-border bg-white lg:hidden"
             >
               <nav aria-label="Mobile" className="shell flex flex-col py-3">
@@ -159,7 +172,7 @@ export function SiteHeader({
                     key={link.href}
                     href={link.href}
                     aria-current={pathname === link.href || pathname.startsWith(`${link.href}/`) ? "page" : undefined}
-                    className="border-b border-border/70 py-3.5 font-display text-lg text-forest last:border-0"
+                    className="border-b border-border/70 py-3.5 font-display text-2xl text-forest last:border-0"
                   >
                     {link.label}
                   </Link>

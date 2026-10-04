@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Sparkle } from "@/components/site/ornaments";
 import { formatMoney, cn } from "@/lib/utils";
 import type { PriceMode } from "@prisma/client";
 
@@ -30,45 +32,53 @@ export function ServiceCard({ service, feature = false }: { service: ServiceCard
     <Link
       href={`/services/${service.slug}`}
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-white transition-shadow duration-300 hover:shadow-[var(--shadow-lift)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
-        feature && "md:col-span-2 md:flex-row",
+        "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-[0_1px_2px_rgb(6_42_29/0.04)] transition-[box-shadow,transform,border-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:border-champagne/60 hover:shadow-[var(--shadow-float)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+        feature && "md:flex-row",
       )}
     >
-      <div className={cn("relative aspect-[16/10] w-full overflow-hidden bg-mist", feature && "md:aspect-auto md:w-1/2")}>
+      <div className={cn("relative aspect-[16/10] w-full overflow-hidden bg-mist", feature && "md:aspect-auto md:min-h-[26rem] md:w-[55%]")}>
         {service.heroImage ? (
           <Image
             src={service.heroImage}
             alt=""
             fill
             sizes={feature ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 100vw, 33vw"}
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            className="object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.07]"
           />
         ) : (
           <div className="grain absolute inset-0" />
         )}
+        {/* A soft emerald floor so the photograph sits in the palette. */}
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-forest-deep/45 via-transparent to-transparent" />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-2.5 rounded-[1.1rem] border border-champagne/0 transition-colors duration-700 group-hover:border-champagne/70"
+        />
         {feature && (
-          <span className="absolute left-4 top-4 rounded-full bg-champagne px-3 py-1 text-xs font-medium text-[#241a06]">
+          <span className="bg-gold absolute left-5 top-5 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-[#241a06] shadow-[var(--shadow-gold)]">
+            <Sparkle className="size-2.5" />
             Our signature service
           </span>
         )}
       </div>
 
-      <div className={cn("flex flex-1 flex-col p-5 md:p-6", feature && "md:justify-center md:p-9")}>
-        <h3 className={cn("font-display font-medium leading-snug text-ink", feature ? "text-2xl md:text-3xl" : "text-xl")}>
+      <div className={cn("flex flex-1 flex-col p-6 md:p-7", feature && "md:justify-center md:p-10 lg:p-12")}>
+        <h3 className={cn("font-display font-semibold leading-[1.1] text-ink", feature ? "text-[1.75rem] md:text-[2.5rem]" : "text-2xl")}>
           {service.name}
         </h3>
-        <p className={cn("mt-2.5 flex-1 text-[0.9375rem] leading-relaxed text-sage", feature && "md:text-base")}>
+        <p className={cn("mt-3 flex-1 text-[0.9375rem] leading-relaxed text-sage", feature && "md:flex-none md:text-[1.0625rem]")}>
           {service.summary}
         </p>
 
-        <div className="mt-5 flex flex-wrap items-center gap-2">
-          <span className="text-[0.9375rem] font-semibold text-forest">{priceLabel(service)}</span>
+        <div className={cn("mt-6 flex flex-wrap items-center gap-2 border-t border-border pt-5", feature && "md:mt-8")}>
+          <span className={cn("font-display font-semibold text-forest", feature ? "text-2xl" : "text-xl")}>{priceLabel(service)}</span>
           {service.negotiable && <Badge variant="accent">Negotiable</Badge>}
           {service.requiresSurvey && <Badge variant="outline">Assessment first</Badge>}
         </div>
 
-        <span className="mt-4 text-sm font-medium text-verdant underline-offset-4 group-hover:underline">
-          See what&rsquo;s included
+        <span className="mt-5 inline-flex items-center gap-2 text-[0.8125rem] font-medium uppercase tracking-[0.14em] text-emerald">
+          <span className="link-draw pb-0.5">See what&rsquo;s included</span>
+          <ArrowRight className="size-4 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1.5" />
         </span>
       </div>
     </Link>

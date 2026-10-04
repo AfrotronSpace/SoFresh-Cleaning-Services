@@ -468,8 +468,8 @@ appointment". `SiteSetting.tagline` is the field that belongs there.
 
 ## S4 — cleanup
 
-22. `--animate-marquee` and `@keyframes marquee` in `globals.css:235,246` are
-    defined and never used.
+22. ~~`--animate-marquee` and `@keyframes marquee` are defined and never
+    used.~~ Resolved 4 Oct 2026: the home page area band uses them.
 23. `src/app/(site)/booking-received/[reference]/page.tsx:17` sets a static
     canonical of `/booking-received` for every reference. Harmless while the
     page is noindexed, but wrong.
@@ -500,11 +500,14 @@ appointment". `SiteSetting.tagline` is the field that belongs there.
 - **Runs with no email service and no WhatsApp API.** Verified by building and booting
   with neither configured; both paths write a `MessageLog` row with status
   `SKIPPED` and an explanatory `error` string.
-- **One non-user-triggered animation.** Only `hero.tsx` has a `setInterval`;
-  the `animate-pulse` in `loading.tsx` is a transient loading state.
-- **Design rules honoured** — white base, forest/champagne, Fraunces + Public
-  Sans, `.seam` motif used instead of horizontal rules, mobile-first
-  breakpoints throughout.
+- **Motion respects reduced-motion.** The one-animation rule was retired on
+  4 Oct 2026 at the owner's request (see `CLAUDE.md`, Design rules). The hero,
+  the area marquee, scroll reveals and the before/after hint all stop under
+  `prefers-reduced-motion`, and scroll reveals leave the page fully visible
+  with no JavaScript.
+- **Design rules honoured** — white base, emerald and gold with depth,
+  Cormorant Garamond + DM Sans, `.seam` motif used instead of horizontal
+  rules, mobile-first breakpoints throughout.
 - **`npm run typecheck` is clean** and `npm run build` produces 34 routes.
 - Radix `Checkbox`/`Switch` form bubbling works; the admin booleans do save.
 - `next.config.mjs` redirect targets both resolve to real seeded slugs.

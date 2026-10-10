@@ -59,6 +59,12 @@ export function toWhatsAppNumber(raw: string) {
   return digits;
 }
 
+/** "447935772485" or "+44 7935 772485" → "07935 772485". Anything that isn't a UK mobile is returned as typed. */
+export function formatUkNumber(raw: string) {
+  const national = toWhatsAppNumber(raw).replace(/^44/, "0");
+  return /^07\d{9}$/.test(national) ? `${national.slice(0, 5)} ${national.slice(5)}` : raw.trim();
+}
+
 export function whatsappLink(number: string, message?: string) {
   const base = `https://wa.me/${toWhatsAppNumber(number)}`;
   return message ? `${base}?text=${encodeURIComponent(message)}` : base;

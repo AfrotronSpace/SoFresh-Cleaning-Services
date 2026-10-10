@@ -7,8 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { loadSettings } from "@/lib/settings";
 import { getSession } from "@/lib/auth";
 import { buildMetadata } from "@/lib/seo";
-import { formatDate, whatsappLink } from "@/lib/utils";
-import { SITE } from "@/lib/constants";
+import { formatDate, formatUkNumber, whatsappLink } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -109,7 +108,7 @@ export default async function BookingReceivedPage({
       )}
 
       <p className="mt-10 text-sm leading-relaxed text-sage">
-        Need to change something? Message {SITE.whatsappDisplay} on WhatsApp or email{" "}
+        Need to change something? Message {formatUkNumber(settings.whatsapp)} on WhatsApp or email{" "}
         <a href={`mailto:${settings.email}`} className="font-medium text-verdant underline underline-offset-4">
           {settings.email}
         </a>{" "}

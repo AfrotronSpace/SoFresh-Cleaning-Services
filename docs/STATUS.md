@@ -101,9 +101,8 @@ a banner while anything is waiting.
    Admin → Reviews; paste each one in and approve it. Nothing shows until then.
 4. **Legal sign-off.** `SETUP-NOTES.md` §4 — the cancellation and booking-fee
    clauses have money attached and should be read by a solicitor.
-5. **Decide the two open questions** in `SETUP-NOTES.md`: which phone number is
-   the main line (the two forms disagree), and whether the 15-hour problem
-   window in AFT-F-02 F2 was meant to be 48.
+5. ~~Decide the two open questions~~ — resolved. One number (07935 772485);
+   the problem-report window is 48 hours (10 Oct 2026).
 
 ### Requested in the discovery forms but not built
 6. **Photo / video upload on the booking form.** AFT-F-02 I4 asks for it

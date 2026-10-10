@@ -29,7 +29,7 @@ Prisma-in-Docker advice) and are commented as such.
 
 There is no test suite and no linter config beyond `next lint`.
 
-## The five rules that override normal judgement
+## The six rules that override normal judgement
 
 These come from the client's discovery forms and are not negotiable without
 asking. Breaking one is a business problem, not a style problem.
@@ -50,6 +50,11 @@ asking. Breaking one is a business problem, not a style problem.
 5. **The site must run with no email service and no WhatsApp API configured.** Both
    integrations degrade to a `MessageLog` row with status `SKIPPED`. Never let
    a missing credential break a booking.
+
+6. **The only price on the public site is £25 per hour for Commercial & Office
+   Cleaning.** Client decision, 10 Oct 2026; Mabel sets every other price herself in
+   Admin → Services. Never write a price into code, copy, seed text or SEO text — a
+   price appears only because a `Service` row carries one (`BUSINESS-RULES.md`).
 
 ## Design rules
 

@@ -51,8 +51,8 @@ export type ServiceFormValues = {
 };
 
 const PRICE_MODES = [
-  { value: "FROM", label: "From a starting price", hint: "Shows as “from £350”." },
-  { value: "PER_HOUR", label: "Hourly rate", hint: "Shows as “£25 per hour”." },
+  { value: "FROM", label: "From a starting price", hint: "Shows as “from £…” beside the service." },
+  { value: "PER_HOUR", label: "Hourly rate", hint: "Shows as “£… per hour” beside the service." },
   { value: "FIXED", label: "One fixed price", hint: "Shows the exact figure." },
   { value: "QUOTE_ONLY", label: "Quote only", hint: "No figure shown — priced from photos or a visit." },
 ];

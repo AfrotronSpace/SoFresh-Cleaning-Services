@@ -8,7 +8,7 @@ import { getSession } from "@/lib/auth";
 import { sendEmail, emailShell } from "@/lib/email";
 import { forwardToWhatsApp } from "@/lib/whatsapp";
 import { SITE } from "@/lib/constants";
-import { formatDate, generateReference } from "@/lib/utils";
+import { formatDate, formatUkNumber, generateReference } from "@/lib/utils";
 
 export const runtime = "nodejs";
 
@@ -140,6 +140,7 @@ export async function POST(request: Request) {
         recipientId: session?.id,
         subject: `We've got your booking request — ${booking.reference}`,
         html: emailShell({
+          contact: settings,
           preheader: "Your booking is in review. We'll be in touch with a price shortly.",
           heading: `Thanks, ${booking.contactName.split(" ")[0]} — your booking is in review`,
           body: `
@@ -149,7 +150,7 @@ export async function POST(request: Request) {
             <strong>Preferred date:</strong> ${formatDate(booking.preferredDate)}<br>
             <strong>Postcode:</strong> ${booking.postcode}</p>
             <p>This is a request rather than a confirmed appointment. Nothing is reserved and no payment is due until we've sent your price and you've accepted it.</p>
-            <p>If you've asked for a quote, we may come back for a few more details, photos or a short video so we can price it accurately. Sending those on WhatsApp is usually quickest: <a href="https://wa.me/${settings.whatsapp}">${SITE.whatsappDisplay}</a>.</p>
+            <p>If you've asked for a quote, we may come back for a few more details, photos or a short video so we can price it accurately. Sending those on WhatsApp is usually quickest: <a href="https://wa.me/${settings.whatsapp}">${formatUkNumber(settings.whatsapp)}</a>.</p>
             <p>We look forward to helping you bring that So Fresh feeling back to your space.</p>
           `,
           cta: { label: "View your booking", url: `${SITE.url}/booking-received/${booking.reference}` },

@@ -54,10 +54,8 @@ On major cleans we dedicate the day to your property alone rather than fitting s
 Depending on the property, the scope can include intensive kitchen and bathroom cleaning; degreasing and descaling; doors, frames, handles and banisters; skirting boards; switches, sockets and high-touch points; internal windows, frames and sills; cupboard and drawer exteriors; detailed appliance cleaning where included; extractor hoods and filters; removal of cobwebs and built-up dust; vacuuming and floor cleaning; targeted steam cleaning and sanitising where suitable; and the corners, edges and fittings most cleans never reach.
 
 The exact scope is agreed after we have seen photos, a short video or the property itself, so the time goes where your property genuinely needs it. Larger or heavily soiled jobs may need three to five cleaners for seven to ten hours or more.`,
-    priceMode: "FROM",
-    price: "350",
+    priceMode: "QUOTE_ONLY",
     negotiable: true,
-    minimumCharge: "Restoration deep cleans start at £350",
     durationEstimate: "Half a day to a full day, sometimes longer",
     noticeHours: 48,
     requiresSurvey: false,
@@ -105,7 +103,7 @@ The exact scope is agreed after we have seen photos, a short video or the proper
     ],
     seoTitle: "Restoration Deep Cleaning in Colchester & Essex",
     seoDescription:
-      "A detail-led deep clean for properties that need properly working through, not a surface clean. Fixed prices from £350 across Colchester, Ipswich and Essex.",
+      "A detail-led deep clean for properties that need properly working through, not a surface clean. Fixed quotes from photos across Colchester, Ipswich and Essex.",
   },
   {
     slug: "end-of-tenancy-cleaning",
@@ -283,7 +281,9 @@ Book it for the day before the removals van if you possibly can — it makes a c
 Scope, frequency and timing are agreed individually. Some clients want a single restoration-level clean to reset the premises; others want us in on a fixed schedule outside their working hours. We can work early, late or at weekends so nobody is stepping over a mop during business hours.
 
 Frequency, minimum term, cancellation notice and payment terms are all agreed with you in writing before we start. Commercial clients can be invoiced, normally on terms up to 30 days.`,
-    priceMode: "QUOTE_ONLY",
+    // The one price shown on the public site (client decision, 10 Oct 2026).
+    priceMode: "PER_HOUR",
+    price: "25",
     negotiable: true,
     durationEstimate: "Agreed to the schedule",
     noticeHours: 72,
@@ -413,14 +413,13 @@ You deal with us throughout: one conversation, one schedule, one point of contac
     group: "COMMERCIAL",
     propertyKind: "HOUSE",
     sortOrder: 100,
-    summary: "Colchester only, and only where we can maintain our standard. £25 per hour, subject to availability.",
+    summary: "Colchester only, and only where we can maintain our standard. Subject to availability.",
     body: `Regular domestic cleaning is not our main focus, and we would rather be straight with you about that than take work we cannot do well.
 
-We accept a small number of regular clients within Colchester, where the travel time makes it workable and where the property suits the way we clean. It is £25 per hour, with minimum booking requirements, and availability is genuinely limited.
+We accept a small number of regular clients within Colchester, where the travel time makes it workable and where the property suits the way we clean. We quote it when you get in touch, with minimum booking requirements, and availability is genuinely limited.
 
 If you are outside Colchester, or if what you need is a weekly two-hour tidy at the lowest price you can find, we are almost certainly not the right company for you — and we will say so rather than waste your time.`,
-    priceMode: "PER_HOUR",
-    price: "25",
+    priceMode: "QUOTE_ONLY",
     negotiable: false,
     minimumCharge: "Minimum booking requirements apply",
     durationEstimate: "Agreed with you, per visit",
@@ -441,9 +440,9 @@ If you are outside Colchester, or if what you need is a weekly two-hour tidy at 
       "Anything not on the agreed list",
     ],
     extras: [{ name: "Inside the oven (occasional)" }, { name: "Internal windows (occasional)" }],
-    seoTitle: "Regular Domestic Cleaning in Colchester — £25 per hour",
+    seoTitle: "Regular Domestic Cleaning in Colchester",
     seoDescription:
-      "A small number of regular domestic cleaning slots in Colchester at £25 per hour. Limited availability and minimum booking requirements apply.",
+      "A small number of regular domestic cleaning slots in Colchester. Limited availability and minimum booking requirements apply.",
   },
 ];
 

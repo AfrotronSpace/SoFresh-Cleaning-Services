@@ -4,6 +4,7 @@ import { contactSchema } from "@/lib/validations";
 import { loadSettings } from "@/lib/settings";
 import { sendEmail, emailShell } from "@/lib/email";
 import { SITE } from "@/lib/constants";
+import { formatUkNumber } from "@/lib/utils";
 
 export const runtime = "nodejs";
 
@@ -61,11 +62,12 @@ export async function POST(request: Request) {
       to: data.email,
       subject: "Thanks for contacting So Fresh Cleaning Service",
       html: emailShell({
+        contact: settings,
         preheader: "We've got your message and will be in touch shortly.",
         heading: `Thanks for getting in touch, ${data.name.split(" ")[0]}`,
         body: `
           <p>We've received your enquiry and a member of our team will be in touch shortly.</p>
-          <p>If you've requested a quote, we may ask for a few additional details, photos or a short video so we can provide an accurate, tailored price. WhatsApp is usually the quickest way to send those: <a href="https://wa.me/${settings.whatsapp}">${SITE.whatsappDisplay}</a>.</p>
+          <p>If you've requested a quote, we may ask for a few additional details, photos or a short video so we can provide an accurate, tailored price. WhatsApp is usually the quickest way to send those: <a href="https://wa.me/${settings.whatsapp}">${formatUkNumber(settings.whatsapp)}</a>.</p>
           <p>We look forward to helping you bring that So Fresh feeling back to your space.</p>
         `,
       }),

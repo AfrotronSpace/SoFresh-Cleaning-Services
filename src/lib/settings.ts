@@ -29,7 +29,7 @@ const FALLBACK = {
   bookingFeeNote:
     "A booking fee secures your date and comes off the final balance. We confirm the exact amount before you commit.",
   cancellationHours: 72,
-  reclaimWindowHours: 15,
+  reclaimWindowHours: 48,
   emailBookingToAdmin: true,
   emailBookingToCustomer: true,
   forwardBookingsToWhatsapp: false,

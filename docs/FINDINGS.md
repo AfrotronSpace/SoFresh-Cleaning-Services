@@ -212,7 +212,13 @@ redirect(String(formData.get("next") || "/dashboard"));
 **Fix:** `const next = String(formData.get("next") || ""); const safe =
 next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";`
 
-### 7. The Help Centre and the booking terms will contradict each other
+### 7. ~~The Help Centre and the booking terms will contradict each other~~ — resolved 10 Oct 2026
+
+`FAQ_GROUPS` is now `buildFaqs(settings, hourlyRates)` in `src/lib/content.ts`, loaded through `loadFaqs()` (`src/lib/faq-data.ts`) by `/help` and the home page. Cancellation and problem-report hours come from `SiteSetting`, and the hourly rate from the `Service` row. The default window is 48 hours.
+
+<details>
+<summary>Original write-up</summary>
+
 
 `src/lib/content.ts` hardcodes the two figures that `SiteSetting` exists to
 control:
@@ -236,7 +242,15 @@ This breaks business rule 4 (notification and policy behaviour lives in
 (`help/page.tsx`, `page.tsx`, the JSON-LD builders) already have `settings` in
 scope.
 
-### 8. Changing the WhatsApp number in Settings leaves stale numbers on the page
+</details>
+
+### 8. ~~Changing the WhatsApp number in Settings leaves stale numbers on the page~~ — resolved 10 Oct 2026
+
+The visible WhatsApp number is now `formatUkNumber(settings.whatsapp)` on the home page, contact page, booking confirmation, footer and both customer emails, and `emailShell()` takes the live `contact` details from Settings (its fallback is still `SITE`). The admin-sent emails and the booking/contact confirmations pass them; the internal admin notifications and the review notification still use the fallback.
+
+<details>
+<summary>Original write-up</summary>
+
 
 Six places render `SITE.whatsappDisplay` / `SITE.phone` / `SITE.email` from
 the hardcoded `constants.ts` object while the adjacent `href` uses
@@ -257,6 +271,8 @@ edited by hand alongside a data migration.
 
 **Fix:** derive the display string from `settings.whatsapp` with a small
 `formatUkNumber()` helper, and pass `settings` into `emailShell()`.
+
+</details>
 
 ### 9. Custom bookings with an unknown service id return a 500
 

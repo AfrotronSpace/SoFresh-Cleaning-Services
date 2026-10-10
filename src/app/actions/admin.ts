@@ -19,6 +19,7 @@ import {
 } from "@/lib/validations";
 import { MAX_FRAMES_PER_JOB, displayNameFromKey } from "@/lib/gallery";
 import { sendEmail, emailShell } from "@/lib/email";
+import { loadSettings } from "@/lib/settings";
 import { forwardToWhatsApp } from "@/lib/whatsapp";
 import { SITE } from "@/lib/constants";
 import { formatMoney, slugify } from "@/lib/utils";
@@ -603,6 +604,7 @@ export async function updateBookingAction(_prev: ActionState, formData: FormData
       senderId: admin.id,
       subject: `${heading} — ${booking.reference}`,
       html: emailShell({
+        contact: await loadSettings(),
         heading,
         body: `
           <p>Hello ${booking.contactName.split(" ")[0]},</p>
@@ -684,6 +686,7 @@ export async function sendMessageAction(_prev: ActionState, formData: FormData):
     senderId: admin.id,
     bookingId: d.bookingId,
     html: emailShell({
+      contact: await loadSettings(),
       heading: d.subject || `A message from ${SITE.name}`,
       body: d.body.replace(/\n/g, "<br>"),
     }),
@@ -711,7 +714,7 @@ export async function saveSettingsAction(_prev: ActionState, formData: FormData)
     quoteWindow: String(formData.get("quoteWindow") ?? ""),
     bookingFeeNote: String(formData.get("bookingFeeNote") ?? ""),
     cancellationHours: Number(formData.get("cancellationHours") ?? 72),
-    reclaimWindowHours: Number(formData.get("reclaimWindowHours") ?? 15),
+    reclaimWindowHours: Number(formData.get("reclaimWindowHours") ?? 48),
     emailBookingToAdmin: formData.get("emailBookingToAdmin") === "on",
     emailBookingToCustomer: formData.get("emailBookingToCustomer") === "on",
     forwardBookingsToWhatsapp: formData.get("forwardBookingsToWhatsapp") === "on",

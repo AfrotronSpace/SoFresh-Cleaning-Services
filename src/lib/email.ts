@@ -143,7 +143,15 @@ export async function sendEmail(args: SendArgs) {
 }
 
 /** Single email shell so every message looks like the website. */
-export function emailShell(opts: { preheader?: string; heading: string; body: string; cta?: { label: string; url: string } }) {
+export function emailShell(opts: {
+  preheader?: string;
+  heading: string;
+  body: string;
+  cta?: { label: string; url: string };
+  /** The live contact details from Settings. Falls back to the built-in ones. */
+  contact?: { email: string; phone: string };
+}) {
+  const contact = opts.contact ?? SITE;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <title>${opts.heading}</title></head>
@@ -167,7 +175,7 @@ ${opts.preheader ? `<div style="display:none;max-height:0;overflow:hidden;opacit
   }
   <tr><td style="padding:18px 28px 26px;border-top:1px solid #e2e7e3;font-size:12px;line-height:1.6;color:#5a6b63;">
     ${SITE.legalName} · Company no. ${SITE.companyNumber}<br>
-    <a href="mailto:${SITE.email}" style="color:#1f7a55;">${SITE.email}</a> · ${SITE.phone}<br>
+    <a href="mailto:${contact.email}" style="color:#1f7a55;">${contact.email}</a> · ${contact.phone}<br>
     We never take payment through the website. All payments are arranged directly with you.
   </td></tr>
 </table>

@@ -50,9 +50,13 @@ End-of-Tenancy Cleaning, Commercial / Office Cleaning.
 
 | Service | Price | Source |
 |---|---|---|
-| So Fresh Restoration Deep Clean | from £350, negotiable | S8 |
-| Selective Regular Domestic Cleaning | £25/hour, **Colchester only**, minimum booking, limited availability | S9, F4 |
-| All others | quote only | B1 |
+| Commercial & Office Cleaning | **£25 per hour** — the only price shown on the public site | Client decision, 10 Oct 2026 |
+| Everything else, including Restoration Deep Clean and Selective Regular Domestic Cleaning (Colchester only, minimum booking, limited availability) | quote only; Mabel sets any other price herself in Admin → Services | Client decision, 10 Oct 2026 (supersedes S8 "from £350" and S9 "£25/hour domestic") |
+
+**Pricing rule.** Do not write a price into code, seed text, FAQ copy or SEO
+text. A price shows on the site only because a `Service` row has one
+(`priceMode` + `price`). The Help Centre reads the live hourly rate via
+`loadFaqs()`. Re-running the seed resets service prices to the seeded ones, so do not re-seed a live database.
 
 S8 is the governing pricing rule: *"Fixed quotation after photos, video or
 site assessment… Final price reflects property size, condition, scope,
@@ -83,15 +87,13 @@ except Brentwood as `priority: true`, which covers both.
 | Quote speed | "within 24 hours of us having everything we need" | `quoteWindow` | B2 |
 | Booking fee | Varies with job value/nature, deducted from the balance, confirmed before booking | `bookingFeeNote` | B3 |
 | Cancellation | at least **72 hours**; fees non-refundable inside that | `cancellationHours` | D1 |
-| Report a problem | within **15 hours** of completion, ideally with photos | `reclaimWindowHours` | F2 |
+| Report a problem | within **48 hours** of completion, ideally with photos | `reclaimWindowHours` | F2 said 15; changed to 48 by the client, 10 Oct 2026 |
 | Notice to book | 48–72 hours preferred; same-day possible with a call-out fee | — (copy) | S11, F3 |
 
-> **The 15-hour figure is unusual** and used exactly as written. 24 or 48 is
-> the norm, and a clean finishing at 6pm gives the customer until 9am. It is
-> also harder to defend in a dispute. `SETUP-NOTES.md` §2 flags this for the
-> client to confirm. Because it is a `SiteSetting`, changing it must not
-> require a deploy — **which finding #7 currently breaks**, since
-> `src/lib/content.ts` hardcodes both 15 and 72.
+> **The 15 hours on the form was changed to 48** by the client on 10 Oct 2026
+> (a 6pm finish would otherwise have ended the window at 9am). Both windows are
+> `SiteSetting`s and the Help Centre now reads them (`buildFaqs()` in
+> `src/lib/content.ts`), so changing one in Admin → Settings needs no deploy.
 
 ## Payment — the hard rule
 

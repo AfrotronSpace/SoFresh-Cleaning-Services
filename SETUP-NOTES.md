@@ -9,15 +9,12 @@ all use it. If it ever changes again, update Admin → Settings **and** `SITE` i
 `src/lib/constants.ts` — some pages still print the number from there
 (`docs/FINDINGS.md` #8).
 
-## 2. The 15-hour window
+## 2. The problem-report window — resolved 2026-10-10
 
-Form AFT-F-02 says concerns about an agreed area should be reported "within 15 hours of
-completion". That's an unusual figure — 24 or 48 is more common — and it's used exactly as
-written in the booking terms and on the website. If 48 was meant, change
-`reclaimWindowHours` in Admin → Settings.
-
-A short window is also harder to defend if a customer disputes it, since a clean finished at
-6pm gives them until 9am the next morning.
+Form AFT-F-02 said "within 15 hours of completion". The client has changed it to **48 hours**.
+It is `reclaimWindowHours` in Admin → Settings; the booking terms and the Help Centre both read
+it, so changing it again needs no deploy. Migration `20261010120000_price_policy_and_48h_window`
+moves an existing database from 15 to 48.
 
 ## 3. Booking confirmation emails
 
@@ -50,7 +47,7 @@ optional, and all editable in Admin → Services:
 | Field | Why |
 |---|---|
 | `group` | Puts each service under the three headings the business asked for |
-| `priceMode` | The difference between "from £350", "£25 per hour" and "quote only" |
+| `priceMode` | The difference between "from £…", "£… per hour" and "quote only". Only Commercial & Office Cleaning has a price (£25 per hour); Mabel sets any other herself |
 | `minimumCharge` | For the regular-cleaning minimum booking rule |
 | `includes` / `excludes` | The form said being clear here prevents disputes |
 | `extras` | Optional add-ons customers can tick while booking |

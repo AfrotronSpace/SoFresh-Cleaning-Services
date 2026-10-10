@@ -58,8 +58,8 @@ enum ServiceGroup {
 
 /// How the headline price should be read by a customer.
 enum PriceMode {
-  FROM // "from £350"
-  PER_HOUR // "£25 per hour"
+  FROM // "from £…"
+  PER_HOUR // "£… per hour"
   FIXED // "£120"
   QUOTE_ONLY // "priced after we see photos"
 }
@@ -532,7 +532,7 @@ model SiteSetting {
   quoteWindow     String @default("Your fixed price arrives within 24 hours of us having everything we need.")
   bookingFeeNote  String @default("A booking fee secures your date and comes off the final balance. We confirm the exact amount before you commit.")
   cancellationHours Int  @default(72)
-  reclaimWindowHours Int @default(15)
+  reclaimWindowHours Int @default(48)
 
   // Notification switches — these are the toggles the business asked for.
   emailBookingToAdmin    Boolean @default(true)

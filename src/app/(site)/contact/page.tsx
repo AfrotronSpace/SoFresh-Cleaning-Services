@@ -6,7 +6,7 @@ import { StickyContactBar } from "@/components/site/sticky-contact-bar";
 import { JsonLd } from "@/components/site/json-ld";
 import { loadSettings } from "@/lib/settings";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
-import { telLink, whatsappLink } from "@/lib/utils";
+import { formatUkNumber, telLink, whatsappLink } from "@/lib/utils";
 import { SITE } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
@@ -54,7 +54,7 @@ export default async function ContactPage() {
             <ContactMethod
               icon={MessageCircle}
               label="WhatsApp"
-              value={SITE.whatsappDisplay}
+              value={formatUkNumber(settings.whatsapp)}
               href={whatsappLink(settings.whatsapp, "Hi, I'd like a quote for a clean.")}
               note="Best for quotes. Send photos or a video and we can usually price the same day."
               external

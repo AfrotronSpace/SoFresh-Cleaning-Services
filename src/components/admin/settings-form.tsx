@@ -126,13 +126,13 @@ export function SettingsForm({ initial, emailConfigured, whatsappApiConfigured }
             <Textarea id="bookingFeeNote" name="bookingFeeNote" defaultValue={initial.bookingFeeNote} className="min-h-[6rem]" />
           </Field>
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Cancellation notice, in hours" htmlFor="cancellationHours" hint="Currently 72 hours.">
+            <Field label="Cancellation notice, in hours" htmlFor="cancellationHours" hint="Shown in the booking terms, the Help Centre and the booking page.">
               <Input id="cancellationHours" name="cancellationHours" type="number" min={0} defaultValue={initial.cancellationHours} />
             </Field>
             <Field
               label="Window to report a problem, in hours"
               htmlFor="reclaimWindowHours"
-              hint="After a clean finishes. Currently 15 hours."
+              hint="Counted from when a clean finishes. Shown in the booking terms and the Help Centre."
             >
               <Input id="reclaimWindowHours" name="reclaimWindowHours" type="number" min={0} defaultValue={initial.reclaimWindowHours} />
             </Field>

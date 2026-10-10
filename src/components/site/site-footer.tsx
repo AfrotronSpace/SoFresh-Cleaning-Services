@@ -3,7 +3,7 @@ import { Mail, MessageCircle, Phone } from "lucide-react";
 import { Logo } from "@/components/site/logo";
 import { Sparkle } from "@/components/site/ornaments";
 import { SITE } from "@/lib/constants";
-import { telLink, whatsappLink } from "@/lib/utils";
+import { formatUkNumber, telLink, whatsappLink } from "@/lib/utils";
 
 const SERVICE_LINKS = [
   { href: "/services/restoration-deep-clean", label: "Restoration deep clean" },
@@ -68,7 +68,7 @@ export function SiteFooter({
           <div className="mt-7 space-y-3 text-[0.9375rem]">
             <a href={whatsappLink(whatsapp)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-white transition-colors hover:text-champagne">
               <MessageCircle className="size-4 shrink-0 text-champagne" />
-              {SITE.whatsappDisplay} on WhatsApp
+              {formatUkNumber(whatsapp)} on WhatsApp
             </a>
             <a href={telLink(phone)} className="flex items-center gap-2.5 text-white transition-colors hover:text-champagne">
               <Phone className="size-4 shrink-0 text-champagne" />

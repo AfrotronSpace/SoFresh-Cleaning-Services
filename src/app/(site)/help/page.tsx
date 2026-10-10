@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { JsonLd } from "@/components/site/json-ld";
-import { FAQ_GROUPS, ALL_FAQS } from "@/lib/content";
+import { loadFaqs } from "@/lib/faq-data";
 import { buildMetadata, faqJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { loadSettings } from "@/lib/settings";
 import { whatsappLink } from "@/lib/utils";
@@ -16,13 +16,13 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default async function HelpPage() {
-  const settings = await loadSettings();
+  const [settings, faqs] = await Promise.all([loadSettings(), loadFaqs()]);
 
   return (
     <>
       <JsonLd
         data={[
-          faqJsonLd(ALL_FAQS),
+          faqJsonLd(faqs.all),
           breadcrumbJsonLd([
             { name: "Home", path: "/" },
             { name: "Help centre", path: "/help" },
@@ -49,7 +49,7 @@ export default async function HelpPage() {
       <div className="shell grid gap-12 py-16 md:py-24 lg:grid-cols-[0.3fr_1fr] lg:gap-16">
         <nav aria-label="Sections" className="lg:sticky lg:top-28 lg:self-start">
           <ul className="space-y-2.5">
-            {FAQ_GROUPS.map((group) => (
+            {faqs.groups.map((group) => (
               <li key={group.title}>
                 <a
                   href={`#${group.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
@@ -63,7 +63,7 @@ export default async function HelpPage() {
         </nav>
 
         <div className="space-y-14">
-          {FAQ_GROUPS.map((group) => (
+          {faqs.groups.map((group) => (
             <section key={group.title} id={group.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")} className="scroll-mt-28">
               <h2 className="font-display text-2xl leading-tight md:text-[2rem]">{group.title}</h2>
               <p className="mt-3 text-[0.9375rem] leading-relaxed text-sage">{group.intro}</p>

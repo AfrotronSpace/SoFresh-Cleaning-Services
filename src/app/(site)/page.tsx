@@ -13,9 +13,10 @@ import { loadSettings } from "@/lib/settings";
 import { getShowcasePair } from "@/lib/gallery-data";
 import { getApprovedReviews } from "@/lib/review-data";
 import { getSession } from "@/lib/auth";
-import { ALL_FAQS, HOW_IT_WORKS } from "@/lib/content";
+import { HOW_IT_WORKS } from "@/lib/content";
+import { loadFaqs } from "@/lib/faq-data";
 import { faqJsonLd } from "@/lib/seo";
-import { whatsappLink } from "@/lib/utils";
+import { formatUkNumber, whatsappLink } from "@/lib/utils";
 import { SITE } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
@@ -38,12 +39,13 @@ async function getServices() {
 const delay = (i: number, step = 110) => ({ "--reveal-delay": `${i * step}ms` }) as React.CSSProperties;
 
 export default async function HomePage() {
-  const [settings, services, reviews, showcase, session] = await Promise.all([
+  const [settings, services, reviews, showcase, session, faqs] = await Promise.all([
     loadSettings(),
     getServices(),
     getApprovedReviews({ take: 6 }),
     getShowcasePair("restoration-deep-clean"),
     getSession(),
+    loadFaqs(),
   ]);
 
   const slides = (settings.heroSlides as HeroSlide[] | null)?.length
@@ -60,7 +62,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <JsonLd data={faqJsonLd(ALL_FAQS.slice(0, 8))} />
+      <JsonLd data={faqJsonLd(faqs.all.slice(0, 8))} />
 
       <Hero slides={slides} whatsapp={settings.whatsapp} />
 
@@ -191,7 +193,7 @@ export default async function HomePage() {
             <dl className="mt-10 grid gap-x-8 gap-y-6 sm:grid-cols-2">
               {[
                 ["Typically", "Half a day to a full day"],
-                ["Priced", "Fixed, from £350"],
+                ["Priced", "Fixed quote, set by condition"],
                 ["Best for", "Empty, neglected or heavily soiled homes"],
                 ["We need", "Photos, a video, or a free assessment"],
               ].map(([term, def], i) => (
@@ -365,7 +367,7 @@ export default async function HomePage() {
 
           <div data-reveal style={delay(1)}>
             <Accordion type="single" collapsible className="border-t border-champagne/40">
-              {ALL_FAQS.slice(0, 6).map((faq) => (
+              {faqs.all.slice(0, 6).map((faq) => (
                 <AccordionItem key={faq.q} value={faq.q}>
                   <AccordionTrigger>{faq.q}</AccordionTrigger>
                   <AccordionContent>{faq.a}</AccordionContent>
@@ -404,7 +406,7 @@ export default async function HomePage() {
                     rel="noopener noreferrer"
                   >
                     <MessageCircle />
-                    Message {SITE.whatsappDisplay}
+                    Message {formatUkNumber(settings.whatsapp)}
                   </a>
                 </Button>
                 <Button asChild size="lg" variant="accent" className="group">
